@@ -1,6 +1,6 @@
 # Start of the makefile
 # Defining variables
-objects = MonteCarlo.o scatteringRates.f95 globalVariables.f95
+objects = MonteCarlo.o scatteringRates.o globalVariables.o scatteringVariables.o
 f90compiler = gfortran
 debugOp = -fcheck=all -Wall
 
@@ -9,20 +9,26 @@ debugOp = -fcheck=all -Wall
 MonteCarlo:	$(objects)
 	$(f90compiler) -o MonteCarlo $(objects)
 
-globalVariables.mod:	globalVariables.o globalVariables.f95
-	$(f90compiler) -c -g $(debugOp) globalVariables.f95
+globalVariables.mod:	globalVariables.o globalVariables.f90
+	$(f90compiler) -c -g $(debugOp) globalVariables.f90
 
-globalVariables.o:	globalVariables.f95
-	$(f90compiler) -c -g $(debugOp) globalVariables.f95
+globalVariables.o:	globalVariables.f90
+	$(f90compiler) -c -g $(debugOp) globalVariables.f90
 
-scatteringRates.o:	scatteringRates.f95	globalVariables.mod
-	$(f90compiler) -c -g $(debugOp) scatteringRates.f95
+scatteringVariables.mod:	scatteringVariables.o scatteringVariables.f90
+	$(f90compiler) -c -g $(debugOp) scatteringVariables.f90
 
-MonteCarlo.o:	MonteCarlo.f95	globalVariables.mod scatteringRates.o
-	$(f90compiler) -c -g $(debugOp) MonteCarlo.f95
+scatteringVariables.o:	scatteringVariables.f90 globalVariables.o
+	$(f90compiler) -c -g $(debugOp) scatteringVariables.f90
+
+scatteringRates.o:	scatteringRates.f90	globalVariables.mod scatteringVariables.mod
+	$(f90compiler) -c -g $(debugOp) scatteringRates.f90
+
+MonteCarlo.o:	MonteCarlo.f90	globalVariables.mod scatteringRates.o
+	$(f90compiler) -c -g $(debugOp) MonteCarlo.f90
 
 # Cleaning everything
 clean:
-	rm globalVariables.mod	MonteCarlo
+	rm globalVariables.mod	scatteringVariables.mod MonteCarlo
 	rm $(objects)
 # End of the makefile
