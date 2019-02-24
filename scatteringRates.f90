@@ -20,12 +20,13 @@ subroutine scatteringRates
 
     ! Initialize Energy
     do i = 1, nE
-        Energy(i) = (2/nE)*i
-        k(i) = sqrt(2*effm*Energy(i)/(hbar*hbarJ))
+        Energy(i) = (2.0/nE)*i
+        k(i) = sqrt(2.0*effm*Energy(i)/(hbar*hbarJ))
     enddo
 
     allocate(GammaMAcoustic(nE),GammaMIonImp(nE), GammaMPop(nE), GammaTot(nE))
 
+    open(unit=10, file='Data/Energy', status="unknown")
     open(unit=11, file='Data/GammaMAcoustic', status="unknown")
     open(unit=12, file='Data/GammaMIonImp', status="unknown")
     open(unit=13, file='Data/GammaMPop', status="unknown")
@@ -34,26 +35,43 @@ subroutine scatteringRates
     do i = 1, nE
 
     ! Density of States
-        g3dAcoustic = sqrt(real(2)/(pi**2*hbar**3)*effm**real(3)/real(2)*sqrt(Energy(i)-Ec))
+        g3dAcoustic = sqrt(2.0/(pi**2.0*hbar**3.0)*effm**(3.0/2.0)*sqrt(Energy(i)-Ec))
+        print *, g3dAcoustic
 
     ! Acoustic Phonon Scattering
-        GammaMAcoustic(i) = 2*pi/(hbarJ*hbar)**real(1)/real(2)*Dac**2*kb*T/(2*rho*vs**2)*g3dAcoustic
+        GammaMAcoustic(i) = 2.0*pi/(hbarJ*hbar)**(1.0/2.0)*(Dac**2.0)*kb*T/(2.0*rho*vs**2.0)*g3dAcoustic
 
     ! Polar Optical Phonon Scattering
-        GammaMPop(i)=(e**2*w0*(epr0/eprInf-1))/ &
-        (4*pi*epr0*ep0*sqrt(hbarJ/hbar)*hbarJ*sqrt(real(2)*Energy(i)/effm))* &
-        (N0*sqrt(1+E0/Energy(i))+(N0+1)*sqrt(1-E0/Energy(i))- &
-        E0*N0/Energy(i)*asinh(sqrt(Energy(i)/E0))+E0*(N0+1)/Energy(i)*asinh(sqrt(Energy(i)/E0-1))))
+        GammaMPop(i) = (e**2.0*w0*(epr0/eprInf-1))/ &
+        (4.0*pi*epr0*ep0*sqrt(hbarJ/hbar)*hbarJ*sqrt(Energy(i)/effm*2.0))* &
+        (N0*sqrt(E0/Energy(i)+1.0)+(N0+1.0)*sqrt(-E0/Energy(i)+1.0)- &
+        E0*N0/Energy(i)*asinh(sqrt(Energy(i)/E0))+E0*(N0+1.0)/Energy(i)*asinh(sqrt(Energy(i)/E0-1.0)))
 
-        GammaMPop=real(GammaMPop)
+        GammaMPop(i)=real(GammaMPop(i))
 
     ! Ionized Impurity Scattering
-        Ld=sqrt(ep0*eprInf*kbJ*T/(e**2*NI)) ! [m]
-        gamma=sqrt(8*effm*Energy(i)*Ld**2/(hbar*hbarJ));
-        GammaMIonImp(i)=(hbar/hbarJ)**real(3)/real(2)*(NI*e**4)/(16*sqrt(2*effm*pi*eprInf**2*ep0**2)* &
-            (log(1+gamma**2)-gamma**2/(1+gamma**2))*Energy(i)**(-real(3)/real(2)))
+        Ld=sqrt(ep0*eprInf*kbJ*T/(e**2.0*NI)) ! [m]
+        gamma=sqrt(8.0*effm*Energy(i)*Ld**2.0/(hbar*hbarJ));
+        GammaMIonImp(i)=(hbar/hbarJ)**3.0/2.0*(NI*e**4.0)/(16.0*sqrt(2.0*effm*pi*eprInf**2.0*ep0**2.0)* &
+            (log(1.0+gamma**2.0)-gamma**2.0/(1.0+gamma**2.0))*Energy(i)**(-3.0/2.0))
+
+    ! Total Scattering
+        GammaTot(i) = GammaMAcoustic(i) + GammaMPop(i) + GammaMIonImp(i)
     
+    ! Write Scattering Rates 
+        write(10, *) Energy(i)
+        write(11, *) GammaMAcoustic(i)
+        write(12, *) GammaMPop(i)
+        write(13, *) GammaMIonImp(i)
+        write(14, *) GammaTot(i)
+
     enddo
+
+    close(10)
+    close(11)
+    close(12)
+    close(13)
+    close(14)
         
     ! Numerical Integration
     
