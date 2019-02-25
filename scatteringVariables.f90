@@ -22,7 +22,7 @@ module scatteringVariables
     real :: eprInf = 10.92
 
     ! Number of Energy Steps
-    integer :: nE=50
+    integer :: nE=500
     real, dimension(:), allocatable :: Energy
     real, dimension(:), allocatable :: k
     
@@ -41,6 +41,12 @@ module scatteringVariables
     
     ! Counter
     integer :: i
+
+    ! Factors
+    real :: g3dFac
+    real :: MAcFac
+    real :: MPopFac
+    real :: MIonFac
 
 
 end module scatteringVariables

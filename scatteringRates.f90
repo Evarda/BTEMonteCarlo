@@ -9,12 +9,12 @@ subroutine scatteringRates
 
     ! GaAs
     effm = 0.067*m0 ![kg] for gamma, L, X respectively
-    rho = 5.36/1000*(1e3) ![kg/m^3]
-    vs = 5.24*10e5/100 ![m/s]
+    rho = 5.36e3 ![kg/m^3]
+    vs = 5.24e3 ![m/s]
 
     ! Polar Optical Phonon Scattering
     w0 = E0/hbar ! [1/s]
-    N0=(exp(E0/(kb*T))-1)**(-1)
+    N0 = (exp(E0/(kb*T))-1)**(-1)
 
     allocate(Energy(nE), k(nE))
 
@@ -28,33 +28,40 @@ subroutine scatteringRates
 
     open(unit=10, file='Data/Energy', status="unknown")
     open(unit=11, file='Data/GammaMAcoustic', status="unknown")
-    open(unit=12, file='Data/GammaMIonImp', status="unknown")
-    open(unit=13, file='Data/GammaMPop', status="unknown")
+    open(unit=12, file='Data/GammaMPop', status="unknown")
+    open(unit=13, file='Data/GammaMIonImp', status="unknown")
     open(unit=14, file='Data/GammaTot', status="unknown")
+
+    g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm/(hbar**2.0))**(1.5)
+    MAcFac = pi/((hbar)**(0.5)*(hbarJ)**(0.5))*(Dac**2.0)*kb*T/(2.0*rho*(vs**2.0))
+    MPopFac = ((e**2.0)*w0*(epr0/eprInf-1))/(4.0*pi*epr0*ep0*((hbar)**(0.25)*(hbarJ)**(0.25)))
+    MIonFac = (e**2.0)/(eprInf**2*ep0**2) * &
+    (hbar/hbarJ)**1.5*(NI*e**2.0) / &
+    (16.0*sqrt(2.0*effm)*pi)
+    print *, g3dFac
+    print *, MAcFac
+    print *, MPopFac
+    print *, MIonFac
 
     do i = 1, nE
 
     ! Density of States
-        g3dAcoustic = sqrt(2.0/(pi**2.0*hbar**3.0)*effm**(3.0/2.0)*sqrt(Energy(i)-Ec))
-        print *, g3dAcoustic
+        g3dAcoustic = g3dFac*sqrt(Energy(i)-Ec)
 
     ! Acoustic Phonon Scattering
-        GammaMAcoustic(i) = 2.0*pi/(hbarJ*hbar)**(1.0/2.0)*(Dac**2.0)*kb*T/(2.0*rho*vs**2.0)*g3dAcoustic
+        GammaMAcoustic(i) = MAcFac*g3dAcoustic
 
     ! Polar Optical Phonon Scattering
-        GammaMPop(i) = (e**2.0*w0*(epr0/eprInf-1))/ &
-        (4.0*pi*epr0*ep0*sqrt(hbarJ/hbar)*hbarJ*sqrt(Energy(i)/effm*2.0))* &
-        (N0*sqrt(E0/Energy(i)+1.0)+(N0+1.0)*sqrt(-E0/Energy(i)+1.0)- &
-        E0*N0/Energy(i)*asinh(sqrt(Energy(i)/E0))+E0*(N0+1.0)/Energy(i)*asinh(sqrt(Energy(i)/E0-1.0)))
-
-        GammaMPop(i)=real(GammaMPop(i))
+        GammaMPop(i) = MPopFac * (1.0/(hbarJ*sqrt(Energy(i)/effm*2.0))) * &
+        (N0*sqrt(E0/Energy(i) + 1.0) + &
+        (N0+1.0)*sqrt(-E0/Energy(i) + 1.0) - &
+        E0*N0/Energy(i)*asinh(sqrt(Energy(i)/E0)) + &
+        E0*(N0+1.0)/Energy(i)*asinh(sqrt(Energy(i)/E0 - 1.0)))
 
     ! Ionized Impurity Scattering
         Ld=sqrt(ep0*eprInf*kbJ*T/(e**2.0*NI)) ! [m]
-        gamma=sqrt(8.0*effm*Energy(i)*Ld**2.0/(hbar*hbarJ));
-        GammaMIonImp(i)=(hbar/hbarJ)**3.0/2.0*(NI*e**4.0)/(16.0*sqrt(2.0*effm*pi*eprInf**2.0*ep0**2.0)* &
-            (log(1.0+gamma**2.0)-gamma**2.0/(1.0+gamma**2.0))*Energy(i)**(-3.0/2.0))
-
+        gamma=sqrt(8.0*effm/hbarJ*((Energy(i)*(Ld**2.0))/(hbar)));
+        GammaMIonImp(i)= MIonFac / ((log(1.0+gamma**2.0)-(gamma**2.0)/(1.0+gamma**2.0))*Energy(i)**(-1.5))
     ! Total Scattering
         GammaTot(i) = GammaMAcoustic(i) + GammaMPop(i) + GammaMIonImp(i)
     
