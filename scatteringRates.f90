@@ -26,25 +26,28 @@ subroutine scatteringRates
     enddo
     enddo
 
-    allocate(GammaAcoustic(3,nE),GammaMIonImp(3,nE), GammaMPop(3,nE), GammaTot(3,nE))
+    allocate(GammaAcousticAbs(3,nE), GammaAcousticEmi(3,nE),GammaMIonImp(3,nE), GammaMPop(3,nE), GammaTot(3,nE))
 
     open(unit=10, file='Data/Energy', status="unknown")
-    open(unit=21, file='Data/gamma/GammaAcoustic', status="unknown")
-    open(unit=22, file='Data/L/GammaAcoustic', status="unknown")
-    open(unit=23, file='Data/X/GammaAcoustic', status="unknown")
+    open(unit=21, file='Data/gamma/GammaAcousticAbs', status="unknown")
+    open(unit=22, file='Data/L/GammaAcousticAbs', status="unknown")
+    open(unit=23, file='Data/X/GammaAcousticAbs', status="unknown")
+    open(unit=24, file='Data/gamma/GammaAcousticEmi', status="unknown")
+    open(unit=25, file='Data/L/GammaAcousticEmi', status="unknown")
+    open(unit=26, file='Data/X/GammaAcousticEmi', status="unknown")
     !open(unit=12, file='Data/GammaMPop', status="unknown")
     !open(unit=13, file='Data/GammaMIonImp', status="unknown")
     !open(unit=14, file='Data/GammaTot', status="unknown")
 
     do valley = 1, 3
     g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm(valley)/(hbar**2.0))**(1.5)
-    AcFac = pi/((hbar)**(0.5)*(hbarJ)**(0.5))*(Dac(valley)**2.0)*kb*T/(2.0*rho*(vs**2.0))
+    AcFac = pi/(2.0*(hbar)**(0.5)*(hbarJ)**(0.5))*(Dac(valley)**2.0)*kb*T/(rho*(vs**2.0))
     !MPopFac = ((e**2.0)*w0*(epr0/eprInf-1))/(4.0*pi*epr0*ep0*((hbar)**(0.25)*(hbarJ)**(0.25)))
     !MIonFac = (e**2.0)/(eprInf**2*ep0**2) * &
     !(hbar/hbarJ)**1.5*(NI*e**2.0) / &
     !(16.0*sqrt(2.0*effm(valley))*pi)
-    print *, g3dFac
-    print *, AcFac
+        print *, AcFac
+    !print *, g3dFac
     !print *, MPopFac
     !print *, MIonFac
     
@@ -54,7 +57,8 @@ subroutine scatteringRates
         g3dAcoustic = g3dFac*sqrt(Energy(i)-Ec)
 
     ! Acoustic Phonon Scattering
-        GammaAcoustic(valley, i) = AcFac*g3dAcoustic
+        GammaAcousticAbs(valley, i) = AcFac*g3dAcoustic
+        GammaAcousticEmi(valley, i) = AcFac*g3dAcoustic
 
     ! 
 
@@ -76,11 +80,14 @@ subroutine scatteringRates
         write(10, *) Energy(i)
 
         if (valley.eq.1) then
-            write(21, *) GammaAcoustic(valley, i)
+            write(21, *) GammaAcousticAbs(valley, i)
+            write(24, *) GammaAcousticEmi(valley, i)
         else if (valley.eq.2) then
-            write(22, *) GammaAcoustic(valley, i)
+            write(22, *) GammaAcousticAbs(valley, i)
+            write(25, *) GammaAcousticEmi(valley, i)
         else if (valley.eq.3) then
-            write(23, *) GammaAcoustic(valley, i)
+            write(23, *) GammaAcousticAbs(valley, i)
+            write(26, *) GammaAcousticEmi(valley, i)
         else
             print *, "Error: Unknown Valley Encountered"
         end if
@@ -96,6 +103,9 @@ subroutine scatteringRates
     close(21)
     close(22)
     close(23)
+    close(24)
+    close(25)
+    close(26)
     !close(12)
     !close(13)
     !close(14)
