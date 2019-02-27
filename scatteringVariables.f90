@@ -27,7 +27,7 @@ module scatteringVariables
     real, dimension(:), allocatable :: k
     
     ! Acoustic Phonon Scattering
-    real :: Dac = 7.01 ! [eV] for gamma, L, X respectively
+    real, dimension(3) :: Dac = (/ 7.01, 9.2, 9.0 /) ! [eV] for gamma, L, X respectively
     
     ! Polar Optical Phonon Scattering
     real :: E0 = 3.536e-2 ![eV]

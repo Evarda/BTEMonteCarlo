@@ -38,7 +38,7 @@ subroutine scatteringRates
 
     do valley = 1, 3
     g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm(valley)/(hbar**2.0))**(1.5)
-    AcFac = pi/((hbar)**(0.5)*(hbarJ)**(0.5))*(Dac**2.0)*kb*T/(2.0*rho*(vs**2.0))
+    AcFac = pi/((hbar)**(0.5)*(hbarJ)**(0.5))*(Dac(valley)**2.0)*kb*T/(2.0*rho*(vs**2.0))
     !MPopFac = ((e**2.0)*w0*(epr0/eprInf-1))/(4.0*pi*epr0*ep0*((hbar)**(0.25)*(hbarJ)**(0.25)))
     !MIonFac = (e**2.0)/(eprInf**2*ep0**2) * &
     !(hbar/hbarJ)**1.5*(NI*e**2.0) / &
