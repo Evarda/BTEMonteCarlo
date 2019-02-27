@@ -46,7 +46,7 @@ subroutine scatteringRates
     !MIonFac = (e**2.0)/(eprInf**2*ep0**2) * &
     !(hbar/hbarJ)**1.5*(NI*e**2.0) / &
     !(16.0*sqrt(2.0*effm(valley))*pi)
-        print *, AcFac
+        print *, "AcFac = ", AcFac
     !print *, g3dFac
     !print *, MPopFac
     !print *, MIonFac
@@ -56,9 +56,9 @@ subroutine scatteringRates
     ! Density of States
         g3dAcoustic = g3dFac*sqrt(Energy(i)-Ec)
 
-    ! Acoustic Phonon Scattering
-        GammaAcousticAbs(valley, i) = AcFac*g3dAcoustic
-        GammaAcousticEmi(valley, i) = AcFac*g3dAcoustic
+    ! Acoustic Phonon Scattering (Reduced by AcFac)
+        GammaAcousticAbs(valley, i) = g3dAcoustic
+        GammaAcousticEmi(valley, i) = g3dAcoustic
 
     ! 
 
@@ -80,14 +80,14 @@ subroutine scatteringRates
         write(10, *) Energy(i)
 
         if (valley.eq.1) then
-            write(21, *) GammaAcousticAbs(valley, i)
-            write(24, *) GammaAcousticEmi(valley, i)
+            write(21, *) AcFac*GammaAcousticAbs(valley, i)
+            write(24, *) AcFac*GammaAcousticEmi(valley, i)
         else if (valley.eq.2) then
-            write(22, *) GammaAcousticAbs(valley, i)
-            write(25, *) GammaAcousticEmi(valley, i)
+            write(22, *) AcFac*GammaAcousticAbs(valley, i)
+            write(25, *) AcFac*GammaAcousticEmi(valley, i)
         else if (valley.eq.3) then
-            write(23, *) GammaAcousticAbs(valley, i)
-            write(26, *) GammaAcousticEmi(valley, i)
+            write(23, *) AcFac*GammaAcousticAbs(valley, i)
+            write(26, *) AcFac*GammaAcousticEmi(valley, i)
         else
             print *, "Error: Unknown Valley Encountered"
         end if
