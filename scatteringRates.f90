@@ -26,15 +26,26 @@ subroutine scatteringRates
     enddo
     enddo
 
-    allocate(GammaAcousticAbs(3,nE), GammaAcousticEmi(3,nE),GammaMIonImp(3,nE), GammaMPop(3,nE), GammaTot(3,nE))
-
+    allocate(GammaAcousticAbs(3,nE), GammaAcousticEmi(3,nE), &
+             GammaIonImp(3,nE), &
+             GammaMPop(3,nE), GammaTot(3,nE))
+    
+    ! Write Energy
     open(unit=10, file='Data/Energy', status="unknown")
+    
+    ! Write GammaAcoustic
     open(unit=21, file='Data/gamma/GammaAcousticAbs', status="unknown")
-    open(unit=22, file='Data/L/GammaAcousticAbs', status="unknown")
-    open(unit=23, file='Data/X/GammaAcousticAbs', status="unknown")
+    open(unit=22, file='Data/L/GammaAcousticAbs',     status="unknown")
+    open(unit=23, file='Data/X/GammaAcousticAbs',     status="unknown")
     open(unit=24, file='Data/gamma/GammaAcousticEmi', status="unknown")
-    open(unit=25, file='Data/L/GammaAcousticEmi', status="unknown")
-    open(unit=26, file='Data/X/GammaAcousticEmi', status="unknown")
+    open(unit=25, file='Data/L/GammaAcousticEmi',     status="unknown")
+    open(unit=26, file='Data/X/GammaAcousticEmi',     status="unknown")
+
+    ! Write GammaIonImp
+    open(unit=31, file='Data/gamma/GammaIonImp', status="unknown")
+    open(unit=32, file='Data/L/GammaIonImp',     status="unknown")
+    open(unit=33, file='Data/X/GammaIonImp',     status="unknown")
+    
     !open(unit=12, file='Data/GammaMPop', status="unknown")
     !open(unit=13, file='Data/GammaMIonImp', status="unknown")
     !open(unit=14, file='Data/GammaTot', status="unknown")
@@ -43,9 +54,9 @@ subroutine scatteringRates
     g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm(valley)/(hbar**2.0))**(1.5)
     AcFac = pi/(2.0*(hbar)**(0.5)*(hbarJ)**(0.5))*(Dac(valley)**2.0)*kb*T/(rho*(vs**2.0))
     !MPopFac = ((e**2.0)*w0*(epr0/eprInf-1))/(4.0*pi*epr0*ep0*((hbar)**(0.25)*(hbarJ)**(0.25)))
-    !MIonFac = (e**2.0)/(eprInf**2*ep0**2) * &
-    !(hbar/hbarJ)**1.5*(NI*e**2.0) / &
-    !(16.0*sqrt(2.0*effm(valley))*pi)
+    IonFac = (e**2.0)/(eprInf**2*ep0**2) * &
+    (hbar/hbarJ)**1.5*(NI*e**2.0) / &
+    (16.0*sqrt(2.0*effm(valley))*pi)
         print *, "AcFac = ", AcFac
     !print *, g3dFac
     !print *, MPopFac
@@ -60,7 +71,10 @@ subroutine scatteringRates
         GammaAcousticAbs(valley, i) = g3dAcoustic
         GammaAcousticEmi(valley, i) = g3dAcoustic
 
-    ! 
+    ! Ionized Impurity Scattering
+        Ld=sqrt(ep0*eprInf*kbJ*T/(e**2.0*NI)) ! [m]
+        gamma=sqrt(8.0*effm(valley)/hbarJ*((Energy(i)*(Ld**2.0))/(hbar)));
+        GammaIonImp(valley, i)= 1 / ((log(1.0+gamma**2.0)-(gamma**2.0)/(1.0+gamma**2.0))*Energy(i)**(-1.5))
 
     ! Polar Optical Phonon Scattering
         !GammaMPop(i) = MPopFac * (1.0/(hbarJ*sqrt(Energy(i)/effm*2.0))) * &
@@ -69,16 +83,14 @@ subroutine scatteringRates
         !E0*N0/Energy(i)*asinh(sqrt(Energy(i)/E0)) + &
         !E0*(N0+1.0)/Energy(i)*asinh(sqrt(Energy(i)/E0 - 1.0)))
 
-    ! Ionized Impurity Scattering
-        !Ld=sqrt(ep0*eprInf*kbJ*T/(e**2.0*NI)) ! [m]
-        !gamma=sqrt(8.0*effm/hbarJ*((Energy(i)*(Ld**2.0))/(hbar)));
-        !GammaMIonImp(i)= MIonFac / ((log(1.0+gamma**2.0)-(gamma**2.0)/(1.0+gamma**2.0))*Energy(i)**(-1.5))
+    
     ! Total Scattering
         !GammaTot(i) = GammaAcoustic(i) + GammaMPop(i) + GammaMIonImp(i)
     
-    ! Write Scattering Rates 
+        ! Write Energy 
         write(10, *) Energy(i)
 
+        ! Write GammaAcoustic
         if (valley.eq.1) then
             write(21, *) AcFac*GammaAcousticAbs(valley, i)
             write(24, *) AcFac*GammaAcousticEmi(valley, i)
@@ -89,7 +101,18 @@ subroutine scatteringRates
             write(23, *) AcFac*GammaAcousticAbs(valley, i)
             write(26, *) AcFac*GammaAcousticEmi(valley, i)
         else
-            print *, "Error: Unknown Valley Encountered"
+            print *, "Error: Unknown Valley Encountered (Acoustic)"
+        end if
+
+        ! Write GammaIonImp
+        if (valley.eq.1) then
+            write(31, *) IonFac*GammaIonImp(valley, i)
+        else if (valley.eq.2) then
+            write(32, *) IonFac*GammaIonImp(valley, i)
+        else if (valley.eq.3) then
+            write(33, *) IonFac*GammaIonImp(valley, i)
+        else
+            print *, "Error: Unknown Valley Encountered (Ion Imp)"
         end if
 
         !write(12, *) GammaMPop(i)
@@ -100,12 +123,18 @@ subroutine scatteringRates
     enddo
 
     close(10)
+
     close(21)
     close(22)
     close(23)
     close(24)
     close(25)
     close(26)
+
+    close(31)
+    close(32)
+    close(33)
+
     !close(12)
     !close(13)
     !close(14)

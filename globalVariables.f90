@@ -7,7 +7,7 @@ module globalVariables
     ! Scattering Rates
     real, dimension(:,:), allocatable :: GammaAcousticAbs
     real, dimension(:,:), allocatable :: GammaAcousticEmi
-    real, dimension(:,:), allocatable :: GammaMIonImp
+    real, dimension(:,:), allocatable :: GammaIonImp
     real, dimension(:,:), allocatable :: GammaMPop
     real, dimension(:,:), allocatable :: GammaTot
     

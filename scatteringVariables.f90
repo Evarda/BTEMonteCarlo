@@ -47,7 +47,7 @@ module scatteringVariables
     real :: g3dFac
     real :: AcFac
     real :: MPopFac
-    real :: MIonFac
+    real :: IonFac
 
 
 end module scatteringVariables
