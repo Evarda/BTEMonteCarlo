@@ -14,8 +14,8 @@ module scatteringVariables
 
     real :: Ec    = 0                ! Energy of the Conduction Band [eV]
     
-    ! GaAs
-    real :: effm
+    ! GaAs for [Gamma, L, X] Valleys
+    real, dimension(3) :: effm       ![kg] for gamma, L, X respectively
     real :: rho
     real :: vs
     real :: epr0 = 12.90
@@ -41,10 +41,11 @@ module scatteringVariables
     
     ! Counter
     integer :: i
+    integer :: valley
 
     ! Factors
     real :: g3dFac
-    real :: MAcFac
+    real :: AcFac
     real :: MPopFac
     real :: MIonFac
 
