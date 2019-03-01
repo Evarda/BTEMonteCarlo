@@ -57,7 +57,7 @@ subroutine scatteringRates
     do valley = 1, 3
     g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm(valley)/(hbar**2.0))**(1.5)
     AcFac = pi/(2.0*(hbar)**(0.5)*(hbarJ)**(0.5))*(Dac(valley)**2.0)*kb*T/(rho*(vs**2.0))
-    IonFac = (e**2/hbarJ)*(NI*e)*(effm(valley)/hbarJ)*((Ld**4)/hbarJ)*(e/ep0)*(1/ep0)
+    IonFac = (Z**2)/(pi*eprInf**2)*(e**2/hbarJ)*(NI*e)*(effm(valley)/hbarJ)*((Ld**4)/hbarJ)*(e/ep0)*(1/ep0)
     !MPopFac = ((e**2.0)*w0*(epr0/eprInf-1))/(4.0*pi*epr0*ep0*((hbar)**(0.25)*(hbarJ)**(0.25)))
     !IonFac = (e**2.0)/(eprInf**2*ep0**2) * &
     !(hbar/hbarJ)**1.5*(NI*e**2.0) / &
@@ -79,9 +79,6 @@ subroutine scatteringRates
     ! Ionized Impurity Scattering
         gamma=sqrt(8.0*effm(valley)/hbarJ*((Energy(i)*(Ld**2.0))/hbar))
         GammaIonImp(valley, i) = k(i)/(4*(k(i)**2)*(Ld**2)+1)
-        
-        !1 / ((log(1.0+gamma**2.0)-(gamma**2.0)/(1.0+gamma**2.0))*Energy(i)**(-1.5))
-        !print *, GammaIonImp(valley, i)
 
     ! Polar Optical Phonon Scattering
         !GammaMPop(i) = MPopFac * (1.0/(hbarJ*sqrt(Energy(i)/effm*2.0))) * &

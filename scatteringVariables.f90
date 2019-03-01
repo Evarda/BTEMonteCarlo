@@ -36,7 +36,7 @@ module scatteringVariables
 
     ! Ionized Impurity Scattering
     real :: dNI = 100
-    real :: NI = 1e23 ! [1/m^3]
+    real :: NI = 1e23 ! [1/m^3] (Equiv to 10^17 1/cm^3)
     real :: Z = 1
     
     ! Counter
