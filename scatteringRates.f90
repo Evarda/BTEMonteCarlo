@@ -19,20 +19,22 @@ subroutine scatteringRates
     w0 = E0/hbar ! [1/s]
     N0 = (exp(E0/(kb*T))-1)**(-1)
 
-    allocate(Energy(nE), k(nE))
+    print*, w0, N0
 
-    ! Initialize Energy
+    allocate(Energy(nE), k(3, nE))
+
+    ! Initialize Energy and Wavevector
     do i = 1, nE
         Energy(i) = (2.0/nE)*i
         do valley = 1, 3
-            k(i) = sqrt(2.0*effm(valley)/hbarJ*Energy(i)/hbar)
+            k(valley, i) = sqrt(2.0*effm(valley)/hbarJ*Energy(i)/hbar) 
         enddo
     enddo
 
-
     allocate(GammaAcousticAbs(3,nE), GammaAcousticEmi(3,nE), &
              GammaIonImp(3,nE), &
-             GammaMPop(3,nE), GammaTot(3,nE))
+             GammaPopAbs(3,nE), GammaPopEmi(3,nE), &
+             GammaTot(3,nE))
     
     ! Write Energy
     open(unit=10, file='Data/Energy', status="unknown")
@@ -49,6 +51,14 @@ subroutine scatteringRates
     open(unit=31, file='Data/gamma/GammaIonImp', status="unknown")
     open(unit=32, file='Data/L/GammaIonImp',     status="unknown")
     open(unit=33, file='Data/X/GammaIonImp',     status="unknown")
+
+    ! Write GammaPop
+    open(unit=41, file='Data/gamma/GammaPopAbs', status="unknown")
+    open(unit=42, file='Data/L/GammaPopAbs',     status="unknown")
+    open(unit=43, file='Data/X/GammaPopAbs',     status="unknown")
+    open(unit=44, file='Data/gamma/GammaPopEmi', status="unknown")
+    open(unit=45, file='Data/L/GammaPopEmi',     status="unknown")
+    open(unit=46, file='Data/X/GammaPopEmi',     status="unknown")
     
     !open(unit=12, file='Data/GammaMPop', status="unknown")
     !open(unit=13, file='Data/GammaMIonImp', status="unknown")
@@ -57,12 +67,17 @@ subroutine scatteringRates
     do valley = 1, 3
     g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm(valley)/(hbar**2.0))**(1.5)
     AcFac = pi/(2.0*(hbar)**(0.5)*(hbarJ)**(0.5))*(Dac(valley)**2.0)*kb*T/(rho*(vs**2.0))
-    IonFac = (Z**2)/(pi*eprInf**2)*(e**2/hbarJ)*(NI*e)*(effm(valley)/hbarJ)*((Ld**4)/hbarJ)*(e/ep0)*(1/ep0)
+    IonFac = (Z**2.0)/(pi*eprInf**2.0)*(e**2.0/hbarJ)*(NI*e)*(effm(valley)/hbarJ)*((Ld**4.0)/hbarJ)*(e/ep0)*(1/ep0)
+    PopFac = sqrt(2.0)/(8.0*pi)*(1.0/eprInf-1.0/epr0)*(e/sqrt(hbarJ))*(e/ep0)*(w0*sqrt(hbar))*(sqrt(effm(valley))/hbarJ)
+
+    !sqrt(2.0)/(8.0*pi)*(1.0/(eprInf)-1.0/(epr0))*(e/sqrt(hbarJ))*(e/ep0)*(w0*sqrt(hbar))*sqrt(effm(1))/hbarJ
+    
+    !((e**2)/hbarJ)*sqrt(effm(valley)/hbarJ)*w0*(1.0/ep0)
     !MPopFac = ((e**2.0)*w0*(epr0/eprInf-1))/(4.0*pi*epr0*ep0*((hbar)**(0.25)*(hbarJ)**(0.25)))
     !IonFac = (e**2.0)/(eprInf**2*ep0**2) * &
     !(hbar/hbarJ)**1.5*(NI*e**2.0) / &
     !(16.0*sqrt(2.0*effm(valley))*pi)
-        print *, "IonFac = ", IonFac
+        print *, "PopFac = ", PopFac
     !print *, g3dFac
     !print *, MPopFac
     !print *, MIonFac
@@ -78,9 +93,20 @@ subroutine scatteringRates
 
     ! Ionized Impurity Scattering
         gamma=sqrt(8.0*effm(valley)/hbarJ*((Energy(i)*(Ld**2.0))/hbar))
-        GammaIonImp(valley, i) = k(i)/(4*(k(i)**2)*(Ld**2)+1)
+        GammaIonImp(valley, i) = k(valley,i)/(4*(k(valley,i)**2)*(Ld**2)+1)
 
     ! Polar Optical Phonon Scattering
+        GammaPopAbs(valley, i) = 1 / sqrt(Energy(i)) * N0 * &
+            log(abs((1.0+sqrt(1.0+(E0/Energy(i))))/(-1.0+sqrt(1.0+(E0/Energy(i))))))
+        
+        !print *, (Energy(i).gt.E0)
+        if (Energy(i).gt.E0) then
+            GammaPopEmi(valley, i) = 1 / sqrt(Energy(i)) * (N0+1) * &
+                log(abs((1.0+sqrt(1.0-(E0/Energy(i))))/(1.0-sqrt(1.0-(E0/Energy(i))))))
+        else
+            GammaPopEmi(valley, i) = 0
+        endif
+        
         !GammaMPop(i) = MPopFac * (1.0/(hbarJ*sqrt(Energy(i)/effm*2.0))) * &
         !(N0*sqrt(E0/Energy(i) + 1.0) + &
         !(N0+1.0)*sqrt(-E0/Energy(i) + 1.0) - &
@@ -119,6 +145,20 @@ subroutine scatteringRates
             print *, "Error: Unknown Valley Encountered (Ion Imp)"
         end if
 
+        ! Write GammaPop
+        if (valley.eq.1) then
+            write(41, *) PopFac*GammaPopAbs(valley, i)
+            write(44, *) PopFac*GammaPopEmi(valley, i)
+        else if (valley.eq.2) then
+            write(42, *) PopFac*GammaPopAbs(valley, i)
+            write(45, *) PopFac*GammaPopEmi(valley, i)
+        else if (valley.eq.3) then
+            write(43, *) PopFac*GammaPopAbs(valley, i)
+            write(46, *) PopFac*GammaPopEmi(valley, i)
+        else
+            print *, "Error: Unknown Valley Encountered (Pop)"
+        end if
+
         !write(12, *) GammaMPop(i)
         !write(13, *) GammaMIonImp(i)
         !write(14, *) GammaTot(i)
@@ -138,6 +178,13 @@ subroutine scatteringRates
     close(31)
     close(32)
     close(33)
+
+    close(41)
+    close(42)
+    close(43)
+    close(44)
+    close(45)
+    close(46)
 
     !close(12)
     !close(13)

@@ -8,7 +8,8 @@ module globalVariables
     real, dimension(:,:), allocatable :: GammaAcousticAbs
     real, dimension(:,:), allocatable :: GammaAcousticEmi
     real, dimension(:,:), allocatable :: GammaIonImp
-    real, dimension(:,:), allocatable :: GammaMPop
+    real, dimension(:,:), allocatable :: GammaPopAbs
+    real, dimension(:,:), allocatable :: GammaPopEmi
     real, dimension(:,:), allocatable :: GammaTot
     
 end module globalVariables

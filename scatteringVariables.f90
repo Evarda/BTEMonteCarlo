@@ -1,5 +1,4 @@
 module scatteringVariables
-    use globalVariables
     implicit none
 
     ! Constants
@@ -24,7 +23,7 @@ module scatteringVariables
     ! Number of Energy Steps
     integer :: nE=500
     real, dimension(:), allocatable :: Energy
-    real, dimension(:), allocatable :: k
+    real, dimension(:, :), allocatable :: k
     
     ! Acoustic Phonon Scattering
     real, dimension(3) :: Dac = (/ 7.01, 9.2, 9.0 /) ! [eV] for gamma, L, X respectively
@@ -46,7 +45,7 @@ module scatteringVariables
     ! Factors
     real :: g3dFac
     real :: AcFac
-    real :: MPopFac
+    real :: PopFac
     real :: IonFac
 
 
