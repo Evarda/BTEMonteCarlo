@@ -34,7 +34,7 @@ subroutine scatteringRates
     allocate(GammaAcousticAbs(3,nE), GammaAcousticEmi(3,nE), &
              GammaIonImp(3,nE), &
              GammaPopAbs(3,nE), GammaPopEmi(3,nE), &
-             GammaTot(3,nE))
+             )
     
     ! Write Energy
     open(unit=10, file='Data/Energy', status="unknown")
@@ -59,28 +59,12 @@ subroutine scatteringRates
     open(unit=44, file='Data/gamma/GammaPopEmi', status="unknown")
     open(unit=45, file='Data/L/GammaPopEmi',     status="unknown")
     open(unit=46, file='Data/X/GammaPopEmi',     status="unknown")
-    
-    !open(unit=12, file='Data/GammaMPop', status="unknown")
-    !open(unit=13, file='Data/GammaMIonImp', status="unknown")
-    !open(unit=14, file='Data/GammaTot', status="unknown")
 
     do valley = 1, 3
     g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm(valley)/(hbar**2.0))**(1.5)
     AcFac = pi/(2.0*(hbar)**(0.5)*(hbarJ)**(0.5))*(Dac(valley)**2.0)*kb*T/(rho*(vs**2.0))
     IonFac = (Z**2.0)/(pi*eprInf**2.0)*(e**2.0/hbarJ)*(NI*e)*(effm(valley)/hbarJ)*((Ld**4.0)/hbarJ)*(e/ep0)*(1/ep0)
     PopFac = sqrt(2.0)/(8.0*pi)*(1.0/eprInf-1.0/epr0)*(e/sqrt(hbarJ))*(e/ep0)*(w0*sqrt(hbar))*(sqrt(effm(valley))/hbarJ)
-
-    !sqrt(2.0)/(8.0*pi)*(1.0/(eprInf)-1.0/(epr0))*(e/sqrt(hbarJ))*(e/ep0)*(w0*sqrt(hbar))*sqrt(effm(1))/hbarJ
-    
-    !((e**2)/hbarJ)*sqrt(effm(valley)/hbarJ)*w0*(1.0/ep0)
-    !MPopFac = ((e**2.0)*w0*(epr0/eprInf-1))/(4.0*pi*epr0*ep0*((hbar)**(0.25)*(hbarJ)**(0.25)))
-    !IonFac = (e**2.0)/(eprInf**2*ep0**2) * &
-    !(hbar/hbarJ)**1.5*(NI*e**2.0) / &
-    !(16.0*sqrt(2.0*effm(valley))*pi)
-        print *, "PopFac = ", PopFac
-    !print *, g3dFac
-    !print *, MPopFac
-    !print *, MIonFac
     
     do i = 1, nE
 
@@ -106,16 +90,8 @@ subroutine scatteringRates
         else
             GammaPopEmi(valley, i) = 0
         endif
-        
-        !GammaMPop(i) = MPopFac * (1.0/(hbarJ*sqrt(Energy(i)/effm*2.0))) * &
-        !(N0*sqrt(E0/Energy(i) + 1.0) + &
-        !(N0+1.0)*sqrt(-E0/Energy(i) + 1.0) - &
-        !E0*N0/Energy(i)*asinh(sqrt(Energy(i)/E0)) + &
-        !E0*(N0+1.0)/Energy(i)*asinh(sqrt(Energy(i)/E0 - 1.0)))
 
-    
-    ! Total Scattering
-        !GammaTot(i) = GammaAcoustic(i) + GammaMPop(i) + GammaMIonImp(i)
+
     
         ! Write Energy 
         write(10, *) Energy(i)
@@ -159,10 +135,6 @@ subroutine scatteringRates
             print *, "Error: Unknown Valley Encountered (Pop)"
         end if
 
-        !write(12, *) GammaMPop(i)
-        !write(13, *) GammaMIonImp(i)
-        !write(14, *) GammaTot(i)
-
     enddo
     enddo
 
@@ -185,72 +157,5 @@ subroutine scatteringRates
     close(44)
     close(45)
     close(46)
-
-    !close(12)
-    !close(13)
-    !close(14)
-        
-    ! Numerical Integration
-    
-    !ExpTauEAcoustic = 0;
-   ! ExpEAcoustic = 0;   
-    
-    !ExpTauEIonImp = 0;
-    !ExpEIonImp = 0; 
-    
-    !ExpTauEPop = 0;
-    !ExpEPop = 0; 
-    
-    !ExpTauETot = 0;
-    !ExpETot = 0;
-    
-    !for i=1:nE
-    !    f0=exp(-Energy(i)/(kb*T));
-    !    g3d = sqrt(Energy(i));
-        
-    !    ExpTauEAcoustic = ExpTauEAcoustic + 1/GammaMAcoustic(i)*Energy(i)*f0*g3d;
-     !   ExpEAcoustic    = ExpEAcoustic + Energy(i)*f0*g3d;
-        
-    !    ExpTauEIonImp = ExpTauEIonImp + 1/GammaMIonImp(i)*Energy(i)*f0*g3d;
-    !    ExpEIonImp    = ExpEIonImp + Energy(i)*f0*g3d;
-    !    
-    !    ExpTauEPop = ExpTauEPop + 1/GammaMPop(i)*Energy(i)*f0*g3d;
-    !    ExpEPop    = ExpEPop + Energy(i)*f0*g3d;
-        
-    !    ExpTauETot = ExpTauETot + 1/GammaTot(i)*Energy(i)*f0*g3d;
-    !    ExpETot    = ExpETot + Energy(i)*f0*g3d;
-        
-    !end
-    
-    ! Find Tau
-    !AvgTauAcoustic  = ExpTauEAcoustic/ExpEAcoustic;
-    !AvgTauIonImp  = ExpTauEIonImp/ExpEIonImp;
-    !AvgTauPop  = ExpTauEPop/ExpEPop;
-    !AvgTauTot  = ExpTauETot/ExpETot;
-    
-    ! Calculate Mobilities
-    !MobilityAcoustic = 100^2*e*AvgTauAcoustic/effm; % cm^2/(Vs)
-    !MobilityIonImp = 100^2*e*AvgTauIonImp/effm; % cm^2/(Vs)
-    !MobilityPop = 100^2*e*AvgTauPop/effm; % cm^2/(Vs)
-    
-    ! Calculate Total Mobility
-    !MobilityTot = 100^2*e*AvgTauTot/effm; % cm^2/(Vs)
-    
-    ! Matthiessen's Rule
-    !Mobility = (1/MobilityAcoustic + 1/MobilityIonImp + 1/MobilityPop).^(-1); % cm^2/(Vs)
-    
-    !disp(['The acoustic mobility is ' num2str(MobilityAcoustic)])
-    !disp(['The ionized impurity mobility is ' num2str(MobilityIonImp)])
-    !disp(['The POP mobility is ' num2str(MobilityPop)])
-    !disp(['The mobility from Matthiessens Rule is ' num2str(Mobility)])
-    !disp(['The mobility from total momentum relaxation rate is ' num2str(MobilityTot)])
-    
-    ! Conductivities
-    !conductivity = NI*e*Mobility;
-    !conductivityTot = NI*e*MobilityTot;
-    
-    !disp(['Conductivity is ' num2str(conductivity)])
-    !disp(['Conductivity is ' num2str(conductivityTot)])
-
 
 end subroutine scatteringRates
