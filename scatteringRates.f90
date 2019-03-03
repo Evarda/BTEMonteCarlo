@@ -1,13 +1,43 @@
+! Calculates Scattering Rates for Each Scattering Mechanism
 subroutine scatteringRates
-    use globalVariables
+    use GaAsConstants
     use scatteringVariables
     implicit none
 
+    ! GaAs for [Gamma, L, X] Valleys
+    real :: rho
+    real :: vs
+    real :: epr0 = 12.90
+    real :: eprInf = 10.92
+
+    ! Useful Values
     real :: g3dAcoustic
     real :: Ld
     real :: gamma
 
-    ! GaAs
+    ! Factors
+    real :: g3dFac
+    real :: AcFac
+    real :: PopFac
+    real :: IonFac
+
+    ! Acoustic Phonon Scattering
+    real, dimension(3) :: Dac = (/ 7.01, 9.2, 9.0 /) ! [eV] for gamma, L, X respectively
+    
+    ! Ionized Impurity Scattering
+    real :: NI = 1e23 ! [1/m^3] (Equiv to 10^17 1/cm^3)
+    real :: Z = 1
+
+    ! Polar Optical Phonon Scattering
+    real :: E0 = 3.536e-2 ![eV]
+    real :: w0
+    real :: N0
+
+    ! Counter
+    integer :: i
+    integer :: valley
+
+    ! GaAs Constants
     effm = (/ 0.067, 0.022, 0.058 /)*m0
     rho = 5.36e3 ![kg/m^3]
     vs = 5.24e3 ![m/s]
@@ -40,25 +70,25 @@ subroutine scatteringRates
     open(unit=10, file='Data/Energy', status="unknown")
     
     ! Write GammaAcoustic
-    open(unit=21, file='Data/gamma/GammaAcousticAbs', status="unknown")
-    open(unit=22, file='Data/L/GammaAcousticAbs',     status="unknown")
-    open(unit=23, file='Data/X/GammaAcousticAbs',     status="unknown")
-    open(unit=24, file='Data/gamma/GammaAcousticEmi', status="unknown")
-    open(unit=25, file='Data/L/GammaAcousticEmi',     status="unknown")
-    open(unit=26, file='Data/X/GammaAcousticEmi',     status="unknown")
+    open(unit=21, file='Data/ScatRates/gamma/GammaAcousticAbs', status="unknown")
+    open(unit=22, file='Data/ScatRates/L/GammaAcousticAbs',     status="unknown")
+    open(unit=23, file='Data/ScatRates/X/GammaAcousticAbs',     status="unknown")
+    open(unit=24, file='Data/ScatRates/gamma/GammaAcousticEmi', status="unknown")
+    open(unit=25, file='Data/ScatRates/L/GammaAcousticEmi',     status="unknown")
+    open(unit=26, file='Data/ScatRates/X/GammaAcousticEmi',     status="unknown")
 
     ! Write GammaIonImp
-    open(unit=31, file='Data/gamma/GammaIonImp', status="unknown")
-    open(unit=32, file='Data/L/GammaIonImp',     status="unknown")
-    open(unit=33, file='Data/X/GammaIonImp',     status="unknown")
+    open(unit=31, file='Data/ScatRates/gamma/GammaIonImp', status="unknown")
+    open(unit=32, file='Data/ScatRates/L/GammaIonImp',     status="unknown")
+    open(unit=33, file='Data/ScatRates/X/GammaIonImp',     status="unknown")
 
     ! Write GammaPop
-    open(unit=41, file='Data/gamma/GammaPopAbs', status="unknown")
-    open(unit=42, file='Data/L/GammaPopAbs',     status="unknown")
-    open(unit=43, file='Data/X/GammaPopAbs',     status="unknown")
-    open(unit=44, file='Data/gamma/GammaPopEmi', status="unknown")
-    open(unit=45, file='Data/L/GammaPopEmi',     status="unknown")
-    open(unit=46, file='Data/X/GammaPopEmi',     status="unknown")
+    open(unit=41, file='Data/ScatRates/gamma/GammaPopAbs', status="unknown")
+    open(unit=42, file='Data/ScatRates/L/GammaPopAbs',     status="unknown")
+    open(unit=43, file='Data/ScatRates/X/GammaPopAbs',     status="unknown")
+    open(unit=44, file='Data/ScatRates/gamma/GammaPopEmi', status="unknown")
+    open(unit=45, file='Data/ScatRates/L/GammaPopEmi',     status="unknown")
+    open(unit=46, file='Data/ScatRates/X/GammaPopEmi',     status="unknown")
 
     do valley = 1, 3
     g3dFac = 1.0/(2.0*(pi**2.0))*(2.0*effm(valley)/(hbar**2.0))**(1.5)

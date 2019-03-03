@@ -1,8 +1,9 @@
 # !/usr/bin/bash
 mkdir Data
-mkdir Data/gamma
-mkdir Data/L
-mkdir Data/X
+mkdir Data/ScatRates
+mkdir Data/ScatRates/gamma
+mkdir Data/ScatRates/L
+mkdir Data/ScatRates/X
 mkdir _Data
 
 make
