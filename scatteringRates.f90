@@ -54,20 +54,25 @@ subroutine scatteringRates
     allocate(Energy(nE), k(3, nE))
 
     ! Initialize Energy and Wavevector
+
+    open(unit=10, file='Data/Energy', status="unknown")
+
     do i = 1, nE
         Energy(i) = (2.0/nE)*i
+        write(10, *) Energy(i)
         do valley = 1, 3
             k(valley, i) = sqrt(2.0*effm(valley)/hbarJ*Energy(i)/hbar) 
         enddo
     enddo
+
+    close(10)
 
     allocate(GammaAcousticAbs(3,nE), GammaAcousticEmi(3,nE), &
              GammaIonImp(3,nE), &
              GammaPopAbs(3,nE), GammaPopEmi(3,nE), &
              )
     
-    ! Write Energy
-    open(unit=10, file='Data/Energy', status="unknown")
+    
     
     ! Write GammaAcoustic
     open(unit=21, file='Data/ScatRates/gamma/GammaAcousticAbs', status="unknown")
@@ -120,11 +125,40 @@ subroutine scatteringRates
         else
             GammaPopEmi(valley, i) = 0
         endif
+    
+    ! Intervalley Scattering
+        
+        ! MATLAB CODE
+        !% Intervalley Scattering
+        !Div = [10 10 10 5.0 7.0]*10^8*100; % [eV/m]
+        !Ein = [0.0278 0.0299 0.0290 0.0293 0.0299]; % [eV]
+        !deltaE = [ 0.29  0.48  0  0.19  0; ...
+        !        -0.29 -0.48 -0 -0.19 -0]; % [eV]
+        !effmIV = [effm(2) effm(3) effm(2) effm(3) effm(3); ...
+        !        effm(1) effm(1) effm(2) effm(2) effm(3)];
+        !ValleyN = [4 3 4 3 3; ...
+        !        1 1 4 4 3];
+        !for n=1:2
+        !for m=1:length(Div)
+    
+        !% Bose-Einstein Distribution
+        !Niv=(exp(Ein(m)/(kb*T))-1)^(-1);
+
+        !% Density of States
+        !g3dIntervalleyAbs = sqrt(2)/(pi^2*hbar^2*(hbarJ*hbar)^(1/2))*effmIV(n,m)^(3/2)*sqrt(E(i)-deltaE(n,m)+Ein(m));
+        !g3dIntervalleyEmi = sqrt(2)/(pi^2*hbar^2*(hbarJ*hbar)^(1/2))*effmIV(n,m)^(3/2)*sqrt(E(i)-deltaE(n,m)-Ein(m));
+
+        !% Intervalley Scattering (TA, LA, LO)
+        !ScattIntervalleyAbs(i,n,m) = pi*Div(m)^2/(2*rho*Ein(m)/hbar)*ValleyN(n,m)*Niv*g3dIntervalleyAbs;
+        !ScattIntervalleyEmi(i,n,m) = pi*Div(m)^2/(2*rho*Ein(m)/hbar)*ValleyN(n,m)*(Niv+1)*g3dIntervalleyEmi;
+        !ScattIntervalleyTot(i,n,m) = ScattIntervalleyAbs(i,n,m)+ScattIntervalleyEmi(i,n,m);
+
+        !end
+        !end
 
 
     
-        ! Write Energy 
-        write(10, *) Energy(i)
+        
 
         ! Write GammaAcoustic
         if (valley.eq.1) then
@@ -167,8 +201,6 @@ subroutine scatteringRates
 
     enddo
     enddo
-
-    close(10)
 
     close(21)
     close(22)
