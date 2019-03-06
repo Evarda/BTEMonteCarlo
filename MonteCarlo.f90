@@ -1,5 +1,5 @@
 program MonteCarlo
-    use globalVariables
+    use GaAsConstants
     implicit none
 
     call scatteringRates()
