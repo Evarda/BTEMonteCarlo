@@ -33,6 +33,13 @@ subroutine scatteringRates
     real :: w0
     real :: N0
 
+    ! Intervalley Scattering
+    real, dimension(5) :: Div = (/ 10.0e10, 10.0e10, 10.0e10, 5.0e10, 7.0e10 /)  ! [eV/m]
+    real, dimension(5) :: Ein = (/ 0.0278, 0.0299, 0.0290, 0.0293, 0.0299 /)     ! [eV]
+    real, dimension(2, 5) :: deltaE                                              ! [eV]
+    real, dimension(2, 5) :: effmIV                                              ! [kg]
+    real, dimension(2, 5) :: ValleyN                                             ! Number of Valleys
+
     ! Counter
     integer :: i
     integer :: valley
@@ -48,6 +55,11 @@ subroutine scatteringRates
     ! Polar Optical Phonon Scattering
     w0 = E0/hbar ! [1/s]
     N0 = (exp(E0/(kb*T))-1)**(-1)
+
+    ! Intervalley Scattering
+    deltaE  = reshape((/ 0.29, -0.29, 0.48, -0.48, 0.0, 0.0, 0.19, -0.19, 0.0, 0.0 /) , (/ 2, 5 /)) ! [eV]
+    effmIV  = reshape((/ effm(2), effm(1), effm(3), effm(1), effm(2), effm(2), effm(3), effm(2), effm(3), effm(3) /) , (/ 2, 5 /)) ! [eV]
+    ValleyN = reshape((/ 4, 1, 3, 1, 4, 4, 3, 4, 3, 3 /) , (/ 2, 5 /)) ! [eV]
 
     print*, w0, N0
 
@@ -129,15 +141,7 @@ subroutine scatteringRates
     ! Intervalley Scattering
         
         ! MATLAB CODE
-        !% Intervalley Scattering
-        !Div = [10 10 10 5.0 7.0]*10^8*100; % [eV/m]
-        !Ein = [0.0278 0.0299 0.0290 0.0293 0.0299]; % [eV]
-        !deltaE = [ 0.29  0.48  0  0.19  0; ...
-        !        -0.29 -0.48 -0 -0.19 -0]; % [eV]
-        !effmIV = [effm(2) effm(3) effm(2) effm(3) effm(3); ...
-        !        effm(1) effm(1) effm(2) effm(2) effm(3)];
-        !ValleyN = [4 3 4 3 3; ...
-        !        1 1 4 4 3];
+        
         !for n=1:2
         !for m=1:length(Div)
     
