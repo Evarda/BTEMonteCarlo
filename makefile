@@ -32,6 +32,8 @@ MonteCarlo.o:	MonteCarlo.f90	GaAsConstants.mod scatteringRates.o makeScatTable.o
 
 # Cleaning everything
 clean:
-	rm GaAsConstants.mod	scatteringVariables.mod MonteCarlo
 	rm $(objects)
+	rm GaAsConstants.mod
+	rm scatteringVariables.mod 
+	rm MonteCarlo
 # End of the makefile
