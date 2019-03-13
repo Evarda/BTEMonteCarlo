@@ -4,4 +4,5 @@ subroutine makeScatTable
     use scatteringVariables
     implicit none
 
+
 end subroutine makeScatTable

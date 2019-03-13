@@ -8,5 +8,9 @@ module scatteringVariables
     real, dimension(:,:), allocatable :: GammaIonImp
     real, dimension(:,:), allocatable :: GammaPopAbs
     real, dimension(:,:), allocatable :: GammaPopEmi
+    real, dimension(:,:), allocatable :: GammaIVAbsCalc
+    real, dimension(:,:), allocatable :: GammaIVEmiCalc
+    real, dimension(:,:,:), allocatable :: GammaIVAbs
+    real, dimension(:,:,:), allocatable :: GammaIVEmi
 
 end module scatteringVariables
