@@ -45,7 +45,8 @@ module GaAsConstants
     real, dimension(:), allocatable :: eTheta
     real, dimension(:), allocatable :: eTff
 
-    real, dimension(1) :: Efield = 1e5
+    integer :: numE = 6
+    real, dimension(6) :: Efield = (/ 0.5e5, 1.0e5, 2.0e5, 5.0e5, 8.0e5, 10.0e5 /)
 
     ! Counter
     integer :: particle

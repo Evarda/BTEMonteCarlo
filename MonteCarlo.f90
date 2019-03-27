@@ -22,7 +22,6 @@ program MonteCarlo
 
 
     ! Problem 1 Open
-    print *, 'Problem 1 Opened'
     open(unit=11, file='Data/Problem1/Energy', status="unknown")
     open(unit=12, file='Data/Problem1/Momentum', status="unknown")
 
@@ -36,7 +35,6 @@ program MonteCarlo
             call random_number(rtheta)
             call random_number(rphi)
             call random_number(rteff)
-                print *, 'Random Numbers =', rEnergy, rtheta, rphi, rteff
             ! Initialize Particles in Gamma Valley
                 eValley(particle) = 1
                 Valleyindex = eValley(particle)
@@ -45,21 +43,23 @@ program MonteCarlo
                 ePhi(particle) = 2.0*pi*rphi
                 eTheta(particle) = acos(1.0-2.0*rtheta)
             ! Calculate Momentum
-                print *, sqrt(2.0*effm(Valleyindex)*eEnergy(particle))
-                eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+                eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+                print *, eMomentumMag(particle)
                 eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
                 eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
                 eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
             ! Initialize Free Flight Time
                 eTff(particle) = -1.0/Gamma0(Valleyindex)*log(rteff)
+            if (nEfield.eq.1) then
             ! Write Problem 1
                 write(11, *) eEnergy(particle)
                 write(12, *) eMomentum(particle,3)
+            endif
 
         enddo
 
-        close(11)
-        close(12)
+    close(11)
+    close(12)
 
 
         ! Begin Time Stepping Loop (t > 1)
@@ -69,7 +69,7 @@ program MonteCarlo
                     ! Drift pz
                     eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*dt
                     eMomentumMag(particle) = sqrt(eMomentum(particle,1)**2.0+eMomentum(particle,2)**2.0+eMomentum(particle,3)**2.0)
-                    eEnergy(particle) = (eMomentumMag(particle)**2.0)/(2.0*effm(Valleyindex))
+                    eEnergy(particle) = (eMomentumMag(particle)**2.0)/(2.0*effm(Valleyindex))/q
                     eTff(particle) = eTff(particle) - dt
                 else if (eTff(particle)<dt) then
                 99  Valleyindex = eValley(particle)
@@ -79,7 +79,7 @@ program MonteCarlo
                     ! Drift to get pz and calculate E
                     eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*eTff(particle)
                     eMomentumMag(particle) = sqrt(eMomentum(particle,1)**2.0+eMomentum(particle,2)**2.0+eMomentum(particle,3)**2.0)
-                    eEnergy(particle) = (eMomentumMag(particle)**2.0)/(2.0*effm(Valleyindex))
+                    eEnergy(particle) = (eMomentumMag(particle)**2.0)/(2.0*effm(Valleyindex))/q
                     ! Choose Scattering Mechanism, update E, p, theta, phi
                     call chooseScatMech()
                     ! Update tff

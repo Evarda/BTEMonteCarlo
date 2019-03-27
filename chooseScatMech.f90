@@ -122,7 +122,7 @@ subroutine chooseScatMech
             f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
             eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
             ! Calculate Momentum
-            eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+            eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
             pxold = eMomentum(particle,1)
             pyold = eMomentum(particle,2)
             pzold = eMomentum(particle,3)
@@ -152,7 +152,7 @@ subroutine chooseScatMech
             f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
             eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
             ! Calculate Momentum
-            eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+            eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
             pxold = eMomentum(particle,1)
             pyold = eMomentum(particle,2)
             pzold = eMomentum(particle,3)
@@ -180,7 +180,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -195,7 +195,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -210,7 +210,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -225,7 +225,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -240,7 +240,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -255,7 +255,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle)) ! CHECK UNITS
+        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
