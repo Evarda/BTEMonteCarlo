@@ -1,6 +1,6 @@
 # Start of the makefile
 # Defining variables
-objects = MonteCarlo.o scatteringRates.o makeScatTable.o GaAsConstants.o scatteringVariables.o
+objects = MonteCarlo.o scatteringRates.o makeScatTable.o GaAsConstants.o scatteringVariables.o chooseScatMech.o
 f90compiler = gfortran
 debugOp = -fcheck=all -Wall
 
@@ -20,6 +20,9 @@ scatteringVariables.mod:	scatteringVariables.o scatteringVariables.f90
 
 scatteringVariables.o:	scatteringVariables.f90 GaAsConstants.o
 	$(f90compiler) -c -g $(debugOp) scatteringVariables.f90
+
+chooseScatMech.o:	chooseScatMech.f90	GaAsConstants.mod scatteringVariables.mod
+	$(f90compiler) -c -g $(debugOp) chooseScatMech.f90
 
 scatteringRates.o:	scatteringRates.f90	GaAsConstants.mod scatteringVariables.mod
 	$(f90compiler) -c -g $(debugOp) scatteringRates.f90

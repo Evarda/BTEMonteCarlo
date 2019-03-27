@@ -196,21 +196,30 @@ subroutine scatteringRates
         GammaAcousticAbs(valley, i) = g3dAcoustic
         GammaAcousticEmi(valley, i) = g3dAcoustic
 
-    ! Ionized Impurity Scattering
+    ! Acoustic Rates (Unreduced)
+        GammaAcousticAbs(valley, i) = AcFac*GammaAcousticAbs(valley, i)
+        GammaAcousticEmi(valley, i) = AcFac*GammaAcousticEmi(valley, i)
+
+    ! Ionized Impurity Scattering (Reduced)
         gamma=sqrt(8.0*effm(valley)/hbarJ*((Energy(i)*(Ld**2.0))/hbar))
         GammaIonImp(valley, i) = k(valley,i)/(4*(k(valley,i)**2)*(Ld**2)+1)
+    ! Ionized Impurity Scattering (Unreduced)
+        GammaIonImp(valley, i) = IonFac * GammaIonImp(valley, i)
 
-    ! Polar Optical Phonon Scattering
+    ! Polar Optical Phonon Scattering (Reduced)
         GammaPopAbs(valley, i) = 1 / sqrt(Energy(i)) * N0 * &
             log(abs((1.0+sqrt(1.0+(E0/Energy(i))))/(-1.0+sqrt(1.0+(E0/Energy(i))))))
-        
-        !print *, (Energy(i).gt.E0)
+
         if (Energy(i).gt.E0) then
             GammaPopEmi(valley, i) = 1 / sqrt(Energy(i)) * (N0+1) * &
                 log(abs((1.0+sqrt(1.0-(E0/Energy(i))))/(1.0-sqrt(1.0-(E0/Energy(i))))))
         else
             GammaPopEmi(valley, i) = 0
         endif
+    
+        ! Polar Optical Phonon Scattering (Unreduced)
+        GammaPopAbs(valley, i) = PopFac * GammaPopAbs(valley, i)
+        GammaPopEmi(valley, i) = PopFac * GammaPopEmi(valley, i)
     
     ! Intervalley Scattering
         do ivstep = 1, 8
@@ -252,39 +261,39 @@ subroutine scatteringRates
 
         ! Write GammaAcoustic
         if (valley.eq.1) then
-            write(21, *) AcFac*GammaAcousticAbs(valley, i)
-            write(24, *) AcFac*GammaAcousticEmi(valley, i)
+            write(21, *) GammaAcousticAbs(valley, i)
+            write(24, *) GammaAcousticEmi(valley, i)
         else if (valley.eq.2) then
-            write(22, *) AcFac*GammaAcousticAbs(valley, i)
-            write(25, *) AcFac*GammaAcousticEmi(valley, i)
+            write(22, *) GammaAcousticAbs(valley, i)
+            write(25, *) GammaAcousticEmi(valley, i)
         else if (valley.eq.3) then
-            write(23, *) AcFac*GammaAcousticAbs(valley, i)
-            write(26, *) AcFac*GammaAcousticEmi(valley, i)
+            write(23, *) GammaAcousticAbs(valley, i)
+            write(26, *) GammaAcousticEmi(valley, i)
         else
             print *, "Error: Unknown Valley Encountered (Acoustic)"
         end if
 
         ! Write GammaIonImp
         if (valley.eq.1) then
-            write(31, *) IonFac*GammaIonImp(valley, i)
+            write(31, *) GammaIonImp(valley, i)
         else if (valley.eq.2) then
-            write(32, *) IonFac*GammaIonImp(valley, i)
+            write(32, *) GammaIonImp(valley, i)
         else if (valley.eq.3) then
-            write(33, *) IonFac*GammaIonImp(valley, i)
+            write(33, *) GammaIonImp(valley, i)
         else
             print *, "Error: Unknown Valley Encountered (Ion Imp)"
         end if
 
         ! Write GammaPop
         if (valley.eq.1) then
-            write(41, *) PopFac*GammaPopAbs(valley, i)
-            write(44, *) PopFac*GammaPopEmi(valley, i)
+            write(41, *) GammaPopAbs(valley, i)
+            write(44, *) GammaPopEmi(valley, i)
         else if (valley.eq.2) then
-            write(42, *) PopFac*GammaPopAbs(valley, i)
-            write(45, *) PopFac*GammaPopEmi(valley, i)
+            write(42, *) GammaPopAbs(valley, i)
+            write(45, *) GammaPopEmi(valley, i)
         else if (valley.eq.3) then
-            write(43, *) PopFac*GammaPopAbs(valley, i)
-            write(46, *) PopFac*GammaPopEmi(valley, i)
+            write(43, *) GammaPopAbs(valley, i)
+            write(46, *) GammaPopEmi(valley, i)
         else
             print *, "Error: Unknown Valley Encountered (Pop)"
         end if

@@ -25,6 +25,37 @@ module GaAsConstants
 
     ! Scattering Table (Valley, Scattering Mechanism, Energy)
     real, dimension(:,:,:), allocatable :: ScatteringTable
+    real, dimension(3) :: Gamma0
+
+    ! Random Numbers
+    real :: rEnergy
+    real :: rtheta
+    real :: rphi
+    real :: rteff
+    real :: rScat
+
+    ! Particle Values
+    integer :: eN0 = 1000
+    integer, dimension(:), allocatable :: eValley
+    integer :: Valleyindex
+    real, dimension(:), allocatable :: eEnergy
+    real, dimension(:,:), allocatable :: eMomentum
+    real, dimension(:), allocatable :: eMomentumMag
+    real, dimension(:), allocatable :: ePhi
+    real, dimension(:), allocatable :: eTheta
+    real, dimension(:), allocatable :: eTff
+
+    real, dimension(1) :: Efield = 1e5
+
+    ! Counter
+    integer :: particle
+    integer :: timestep
+    integer :: nEfield
+    integer :: maxtimestep = 10
+
+    real :: dt = 1e-15
+
+
 
     contains
 
