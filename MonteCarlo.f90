@@ -63,7 +63,9 @@ program MonteCarlo
     open(unit=28, file='Data/Problem2/PAVG', status="unknown")
     open(unit=29, file='Data/Problem2/PZAVG', status="unknown")
 
-    do nEfield = 1, numE
+    open(unit=30, file='Data/Problem2/mechanism', status="unknown")
+
+    do nEfield = 1, 6
         print *, 'Electric field =', Efield(nEfield)
 
         ! Clear Arrays
@@ -98,7 +100,7 @@ program MonteCarlo
                 ePhi(particle) = 2.0*pi*rphi
                 eTheta(particle) = acos(1.0-2.0*rtheta)
             ! Calculate Momentum
-                eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+                eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))/sqrt(q)
                 eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
                 eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
                 eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -108,13 +110,13 @@ program MonteCarlo
 
             ! Write Problem 1
                 write(11, *) eEnergy(particle)
-                write(12, *) eMomentum(particle,3)
+                write(12, *) q*eMomentum(particle,3)
             endif
 
             ! Time Sums
-            vxSum = vxSum + eMomentum(particle,1)/effm(eValley(particle))
-            vySum = vySum + eMomentum(particle,2)/effm(eValley(particle))
-            vzSum = vzSum + eMomentum(particle,3)/effm(eValley(particle))
+            vxSum = vxSum + q*eMomentum(particle,1)/effm(eValley(particle))
+            vySum = vySum + q*eMomentum(particle,2)/effm(eValley(particle))
+            vzSum = vzSum + q*eMomentum(particle,3)/effm(eValley(particle))
             
             KESum = KESum + eEnergy(particle)
 
@@ -130,8 +132,8 @@ program MonteCarlo
             endif
 
             EAVG = EAVG + eEnergy(particle)
-            PAVG = PAVG + eMomentumMag(particle)
-            PZAVG = PZAVG + eMomentum(particle,3)
+            PAVG = PAVG + q*eMomentumMag(particle)
+            PZAVG = PZAVG + q*eMomentum(particle,3)
             
         enddo
 
@@ -183,15 +185,23 @@ program MonteCarlo
                 ! If Free Flight Time is bigger than the step size dt
                 if (eTff(particle)>=dt) then
                     ! Drift pz by dt
-                    eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*dt
+                    eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*dt
                     ! Update p
-                    eMomentumMag(particle) = sqrt((eMomentum(particle,1)/q)**2.0 + &
-                                                  (eMomentum(particle,2)/q)**2.0 + &
-                                                  (eMomentum(particle,3)/q)**2.0)*q
+                    eMomentumMag(particle) = sqrt((eMomentum(particle,1))**2.0 + &
+                                                  (eMomentum(particle,2))**2.0 + &
+                                                  (eMomentum(particle,3))**2.0)
                     ! Update Energy
-                    eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(eValley(particle)))*q
+                    eEnergy(particle) = ((eMomentumMag(particle))**2.0)/(2.0*effm(eValley(particle)))*q
                     ! Update Free Flight Time
                     eTff(particle) = eTff(particle) - dt
+
+                    if(isnan(eEnergy(particle))) then
+                        print *, "Energy is NaN in first loop"
+                        call abort
+                    elseif(isnan(eMomentumMag(particle))) then
+                        print *, "Momentum is NaN in first loop"
+                        call abort
+                    endif
 
                 ! If Free Flight Time is smaller than the step size dt
                 else if (eTff(particle)<dt) then
@@ -199,17 +209,33 @@ program MonteCarlo
                     timeLeft = dt-eTff(particle)
                     
                     ! Drift pz by eTff
-                99  eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*eTff(particle)
+                99  eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*eTff(particle)
                     ! Update p
-                    eMomentumMag(particle) = sqrt((eMomentum(particle,1)/q)**2.0 + &
-                                                  (eMomentum(particle,2)/q)**2.0 + &
-                                                  (eMomentum(particle,3)/q)**2.0)*q
+                    eMomentumMag(particle) = sqrt((eMomentum(particle,1))**2.0 + &
+                                                  (eMomentum(particle,2))**2.0 + &
+                                                  (eMomentum(particle,3))**2.0)
                     ! Update Energy
-                    eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(eValley(particle)))*q
+                    eEnergy(particle) = ((eMomentumMag(particle))**2.0)/(2.0*effm(eValley(particle)))*q
                     
+                    if(isnan(eEnergy(particle))) then
+                        print *, "Energy is NaN pre-scatter"
+                        call abort
+                    elseif(isnan(eMomentumMag(particle))) then
+                        print *, "Momentum is NaN pre-scatter"
+                        call abort
+                    endif
+
                     ! Scatter (new theta and phi, E and p calculated)
                     call random_number(rScat)
                     call chooseScatMech()
+                    
+                    if(isnan(eEnergy(particle))) then
+                        print *, "Energy is NaN post-scatter with mechanism", mechanism
+                        call abort
+                    elseif(isnan(eMomentumMag(particle))) then
+                        print *, "Momentum is NaN post-scatter with mechanism", mechanism
+                        call abort
+                    endif
                     
                     ! New Free Flight Time
                     call random_number(rteff)
@@ -228,22 +254,31 @@ program MonteCarlo
                             print *, "Error: Scattering time is negative!"
                         endif
                         ! Drift pz by the remaining time after the last scattering in timestep
-                        eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*timeLastScat
+                        eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*timeLastScat
                         ! Update p
-                        eMomentumMag(particle) = sqrt((eMomentum(particle,1)/q)**2.0 + &
-                                                      (eMomentum(particle,2)/q)**2.0 + &
-                                                      (eMomentum(particle,3)/q)**2.0)*q
+                        eMomentumMag(particle) = sqrt((eMomentum(particle,1))**2.0 + &
+                                                      (eMomentum(particle,2))**2.0 + &
+                                                      (eMomentum(particle,3))**2.0)
                         ! Update Energy
-                        eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(eValley(particle)))*q
+                        eEnergy(particle) = ((eMomentumMag(particle))**2.0)/(2.0*effm(eValley(particle)))*q
                     endif
                 else
                     print *, "Error: Particle Time Error in Time Stepping Loop"
                 endif
 
+                if(isnan(eEnergy(particle))) then
+                    print *, "Energy is NaN at timestep", timestep
+                    call abort
+                elseif(isnan(eMomentumMag(particle))) then
+                    print *, "Momentum is NaN at timestep", timestep
+                    call abort
+                endif
+
+
                 ! Time Sums
-                vxSum = vxSum + eMomentum(particle,1)/effm(eValley(particle))
-                vySum = vySum + eMomentum(particle,2)/effm(eValley(particle))
-                vzSum = vzSum + eMomentum(particle,3)/effm(eValley(particle))
+                vxSum = vxSum + q*eMomentum(particle,1)/effm(eValley(particle))
+                vySum = vySum + q*eMomentum(particle,2)/effm(eValley(particle))
+                vzSum = vzSum + q*eMomentum(particle,3)/effm(eValley(particle))
                 
                 KESum = KESum + eEnergy(particle)
 
@@ -259,8 +294,8 @@ program MonteCarlo
                 endif
 
                 EAVG = EAVG + eEnergy(particle)
-                PAVG = PAVG + eMomentumMag(particle)
-                PZAVG = PZAVG + eMomentum(particle,3)
+                PAVG = PAVG + q*eMomentumMag(particle)
+                PZAVG = PZAVG + q*eMomentum(particle,3)
 
             enddo
 
@@ -276,13 +311,15 @@ program MonteCarlo
             write(21, *) ValleyPopG
             write(22, *) ValleyPopL
             write(23, *) ValleyPopX
-            write(24, *) timestep
+            write(24, *) timestep + 1
             write(25, *) timestep*dt
             write(26, *) nEfield
 
             write(27, *) EAVG  / eN0
             write(28, *) PAVG  / eN0
             write(29, *) PZAVG / eN0
+
+            
 
         enddo
 
@@ -306,5 +343,6 @@ program MonteCarlo
     close(27)
     close(28)
     close(29)
+
     
 end program MonteCarlo

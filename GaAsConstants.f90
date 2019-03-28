@@ -52,9 +52,12 @@ module GaAsConstants
     integer :: particle
     integer :: timestep
     integer :: nEfield
-    integer :: maxtimestep = 200
+    integer :: maxtimestep = 1400
 
-    real :: dt = 50e-15
+    real :: dt = 10e-15
+
+    ! Check scattering
+    integer :: mechanism
 
 
 

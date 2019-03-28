@@ -68,13 +68,13 @@ subroutine chooseScatMech
     
 
 
-
     ! Find Energy Index
     do ii = 1, nE
+        index = 1;
         if (Energy(ii)<=eEnergy(particle)) then
             index = ii
         elseif (Energy(ii)>eEnergy(particle)) then
-            return
+            exit
         endif
     enddo
     if (index>nE) then
@@ -91,6 +91,7 @@ subroutine chooseScatMech
         ! Update p
 
     if (rScat<=ScatteringTable(eValley(particle), index, 1)) then
+        mechanism = 1
         ! AcousticAbs
             ! Generate New Theta, Phi
             call random_number(rtheta)
@@ -103,6 +104,7 @@ subroutine chooseScatMech
             eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
         
     elseif (rScat<=ScatteringTable(eValley(particle), index, 2)) then
+        mechanism = 2
         ! AcoutsticEmi
             ! Generate New Theta, Phi
             call random_number(rtheta)
@@ -115,6 +117,7 @@ subroutine chooseScatMech
             eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
     elseif (rScat<=ScatteringTable(eValley(particle), index, 3)) then
+        mechanism = 3
         ! GammaPopAbs
             ! Calculate Energy, Momentum
             eEnergy(particle) = eEnergy(particle)+EPOP
@@ -125,7 +128,7 @@ subroutine chooseScatMech
             f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
             eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
             ! Calculate Momentum
-            eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+            eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
             pxold = eMomentum(particle,1)
             pyold = eMomentum(particle,2)
             pzold = eMomentum(particle,3)
@@ -134,17 +137,27 @@ subroutine chooseScatMech
             pznew = eMomentumMag(particle)*cos(eTheta(particle))
             pold = sqrt(pxold**2+pyold**2+pzold**2)
             pnew = eMomentumMag(particle)
-            eMomentum(particle,1) = pxnew*(pzold*pxold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
-                                    pynew*(-pyold/sqrt(pxold**2.0+pyold**2.0)) + &
+            eMomentum(particle,1) = pxnew*(pyold/sqrt(pxold**2.0+pyold**2.0)) + &
+                                    pynew*(pxold*pzold/pold/sqrt(pxold**2.0+pyold**2.0)) + &
                                     pznew*(pxold/pold)
-            eMomentum(particle,2) = pxnew*(pyold*pzold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
-                                    pynew*(pxold/sqrt(pxold**2.0+pyold**2.0)) + &
+            eMomentum(particle,2) = pxnew*(-pxold/sqrt(pxold**2.0+pyold**2.0)) + &
+                                    pynew*(pyold*pzold/pold/sqrt(pxold**2.0+pyold**2.0)) + &
                                     pznew*(pyold/pold)
-            eMomentum(particle,3) = pxnew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            eMomentum(particle,3) = pynew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
                                     pznew*(pzold/pold)
+            
+            !eMomentum(particle,1) = pxnew*(pzold*pxold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            !                        pynew*(-pyold/sqrt(pxold**2.0+pyold**2.0)) + &
+            !                        pznew*(pxold/pold)
+            !eMomentum(particle,2) = pxnew*(pyold*pzold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            !                        pynew*(pxold/sqrt(pxold**2.0+pyold**2.0)) + &
+            !                        pznew*(pyold/pold)
+            !eMomentum(particle,3) = pxnew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            !                        pznew*(pzold/pold)
 
 
     elseif (rScat<=ScatteringTable(eValley(particle), index, 4)) then
+        mechanism = 4
         ! GammaPopEmi
             ! Calculate Energy
             eEnergy(particle) = eEnergy(particle)-EPOP
@@ -155,7 +168,7 @@ subroutine chooseScatMech
             f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
             eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
             ! Calculate Momentum
-            eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+            eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
             pxold = eMomentum(particle,1)
             pyold = eMomentum(particle,2)
             pzold = eMomentum(particle,3)
@@ -164,16 +177,26 @@ subroutine chooseScatMech
             pznew = eMomentumMag(particle)*cos(eTheta(particle))
             pold = sqrt(pxold**2+pyold**2+pzold**2)
             pnew = eMomentumMag(particle)
-            eMomentum(particle,1) = pxnew*(pzold*pxold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
-                                    pynew*(-pyold/sqrt(pxold**2.0+pyold**2.0)) + &
+            eMomentum(particle,1) = pxnew*(pyold/sqrt(pxold**2.0+pyold**2.0)) + &
+                                    pynew*(pxold*pzold/pold/sqrt(pxold**2.0+pyold**2.0)) + &
                                     pznew*(pxold/pold)
-            eMomentum(particle,2) = pxnew*(pyold*pzold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
-                                    pynew*(pxold/sqrt(pxold**2.0+pyold**2.0)) + &
+            eMomentum(particle,2) = pxnew*(-pxold/sqrt(pxold**2.0+pyold**2.0)) + &
+                                    pynew*(pyold*pzold/pold/sqrt(pxold**2.0+pyold**2.0)) + &
                                     pznew*(pyold/pold)
-            eMomentum(particle,3) = pxnew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            eMomentum(particle,3) = pynew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
                                     pznew*(pzold/pold)
 
+            !eMomentum(particle,1) = pxnew*(pzold*pxold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            !                        pynew*(-pyold/sqrt(pxold**2.0+pyold**2.0)) + &
+            !                        pznew*(pxold/pold)
+            !eMomentum(particle,2) = pxnew*(pyold*pzold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            !                        pynew*(pxold/sqrt(pxold**2.0+pyold**2.0)) + &
+            !                        pznew*(pyold/pold)
+            !eMomentum(particle,3) = pxnew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
+            !                        pznew*(pzold/pold)
+
     elseif (rScat<=ScatteringTable(eValley(particle), index, 5)) then
+        mechanism = 5
         ! GammaIVAbs(to 2) Energy(i)-deltaE(ivstep)+Eiv(ivstep)
 
         ! Calculate Energy
@@ -188,12 +211,13 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
     elseif (rScat<=ScatteringTable(eValley(particle), index, 6)) then
+        mechanism = 6
         ! GammaIVEmi(to 2)
 
         ! Calculate Energy
@@ -208,7 +232,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -216,6 +240,7 @@ subroutine chooseScatMech
         
 
     elseif (rScat<=ScatteringTable(eValley(particle), index, 7)) then
+        mechanism = 7
         ! GammaIVAbs(to 3)
 
         ! Calculate Energy
@@ -230,7 +255,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -238,13 +263,12 @@ subroutine chooseScatMech
         
         
     elseif (rScat<=ScatteringTable(eValley(particle), index, 8)) then
+        mechanism = 8
         ! GammaIVEmi(to 3)
-        
-
         ! Calculate Energy
+
         eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 3)-Eiv(eValley(particle), 3)
         !print *, "Intervalley Scattering", eEnergy(particle)
-        
         ! Change Valley
         eValley(particle) = 3
 
@@ -254,14 +278,15 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))/sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
-        
+
 
     elseif (rScat<=ScatteringTable(eValley(particle), index, 9)) then
+        mechanism = 9
         ! GammaIVAbs(to 1) NOT FOR 1
         if (Valleyindex.eq.1) then
             print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
@@ -279,7 +304,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -287,6 +312,7 @@ subroutine chooseScatMech
         
 
     elseif (rScat<=ScatteringTable(eValley(particle), index, 10)) then
+        mechanism = 10
         ! GammaIVEmi(to 1) NOT FOR 1
         if (eValley(particle).eq.1) then
             print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
@@ -298,22 +324,24 @@ subroutine chooseScatMech
         ! Change Valley
         eValley(particle) = 1
 
+
         ! Generate New Theta, Phi
         call random_number(rtheta)
         call random_number(rphi)
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
     else
         ! Self Scattering
+        mechanism = 11
+        !print *, "Self scattered"
     endif
 
-    ! Gamma from Energy Interpolation
 
 
 end subroutine chooseScatMech

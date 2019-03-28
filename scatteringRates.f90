@@ -4,6 +4,8 @@ subroutine scatteringRates
     use scatteringVariables
     implicit none
 
+ 
+
     ! GaAs for [Gamma, L, X] Valleys
     real :: rho
     real :: vs
@@ -82,6 +84,8 @@ subroutine scatteringRates
     integer :: i        ! Energy
     integer :: valley   ! Valley
     integer :: ivstep   ! Intervalley Pair
+
+    print *, "Entering ScatteringRates.f90"
 
     ! GaAs Constants
     effm = (/ 0.067, 0.22, 0.58 /)*m0
@@ -361,5 +365,7 @@ subroutine scatteringRates
     close(66)
     close(67)
     close(68)
+
+    print *, "Exiting ScatteringRates.f90"
 
 end subroutine scatteringRates
