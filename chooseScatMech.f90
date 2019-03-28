@@ -77,6 +77,9 @@ subroutine chooseScatMech
             return
         endif
     enddo
+    if (index>nE) then
+        index = nE
+    endif
 
     ! Choose Gamma
 
@@ -87,7 +90,7 @@ subroutine chooseScatMech
         ! Update phi
         ! Update p
 
-    if (rScat<=ScatteringTable(Valleyindex, index, 1)) then
+    if (rScat<=ScatteringTable(eValley(particle), index, 1)) then
         ! AcousticAbs
             ! Generate New Theta, Phi
             call random_number(rtheta)
@@ -99,7 +102,7 @@ subroutine chooseScatMech
             eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
             eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
         
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 2)) then
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 2)) then
         ! AcoutsticEmi
             ! Generate New Theta, Phi
             call random_number(rtheta)
@@ -111,7 +114,7 @@ subroutine chooseScatMech
             eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
             eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 3)) then
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 3)) then
         ! GammaPopAbs
             ! Calculate Energy, Momentum
             eEnergy(particle) = eEnergy(particle)+EPOP
@@ -122,7 +125,7 @@ subroutine chooseScatMech
             f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
             eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
             ! Calculate Momentum
-            eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+            eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
             pxold = eMomentum(particle,1)
             pyold = eMomentum(particle,2)
             pzold = eMomentum(particle,3)
@@ -141,7 +144,7 @@ subroutine chooseScatMech
                                     pznew*(pzold/pold)
 
 
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 4)) then
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 4)) then
         ! GammaPopEmi
             ! Calculate Energy
             eEnergy(particle) = eEnergy(particle)-EPOP
@@ -152,7 +155,7 @@ subroutine chooseScatMech
             f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
             eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
             ! Calculate Momentum
-            eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+            eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
             pxold = eMomentum(particle,1)
             pyold = eMomentum(particle,2)
             pzold = eMomentum(particle,3)
@@ -170,96 +173,142 @@ subroutine chooseScatMech
             eMomentum(particle,3) = pxnew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
                                     pznew*(pzold/pold)
 
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 5)) then
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 5)) then
         ! GammaIVAbs(to 2) Energy(i)-deltaE(ivstep)+Eiv(ivstep)
+
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(Valleyindex, 2)+Eiv(Valleyindex, 2)
+        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 2)+Eiv(eValley(particle), 2)
+        !print *, "Intervalley Scattering", eEnergy(particle)
+        ! Change Valley
+        eValley(particle) = 2
+
         ! Generate New Theta, Phi
         call random_number(rtheta)
         call random_number(rphi)
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 6)) then
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 6)) then
         ! GammaIVEmi(to 2)
+
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(Valleyindex, 2)-Eiv(Valleyindex, 2)
+        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 2)-Eiv(eValley(particle), 2)
+        !print *, "Intervalley Scattering", eEnergy(particle)
+        ! Change Valley
+        eValley(particle) = 2
+
         ! Generate New Theta, Phi
         call random_number(rtheta)
         call random_number(rphi)
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 7)) then
-        ! GammaIVAbs(to 3)
-        ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(Valleyindex, 3)+Eiv(Valleyindex, 3)
-        ! Generate New Theta, Phi
-        call random_number(rtheta)
-        call random_number(rphi)
-        ePhi(particle) = 2.0*pi*rphi
-        eTheta(particle) = acos(1.0-2.0*rtheta)
-        ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
-        eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
-        eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
-        eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
         
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 8)) then
+
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 7)) then
+        ! GammaIVAbs(to 3)
+
+        ! Calculate Energy
+        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 3)+Eiv(eValley(particle), 3)
+        !print *, "Intervalley Scattering", eEnergy(particle)
+        ! Change Valley
+        eValley(particle) = 3
+
+        ! Generate New Theta, Phi
+        call random_number(rtheta)
+        call random_number(rphi)
+        ePhi(particle) = 2.0*pi*rphi
+        eTheta(particle) = acos(1.0-2.0*rtheta)
+        ! Calculate New Components of Momentum
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
+        eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
+        eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
+        eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
+
+        
+        
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 8)) then
         ! GammaIVEmi(to 3)
+        
+
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(Valleyindex, 3)-Eiv(Valleyindex, 3)
+        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 3)-Eiv(eValley(particle), 3)
+        !print *, "Intervalley Scattering", eEnergy(particle)
+        
+        ! Change Valley
+        eValley(particle) = 3
+
         ! Generate New Theta, Phi
         call random_number(rtheta)
         call random_number(rphi)
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 9)) then
+        
+
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 9)) then
         ! GammaIVAbs(to 1) NOT FOR 1
+        if (Valleyindex.eq.1) then
+            print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
+        endif
+
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(Valleyindex, 1)+Eiv(Valleyindex, 1)
+        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 1)+Eiv(eValley(particle), 1)
+        !print *, "Intervalley Scattering", eEnergy(particle)
+        ! Change Valley
+        eValley(particle) = 1
+
         ! Generate New Theta, Phi
         call random_number(rtheta)
         call random_number(rphi)
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
 
-    elseif (rScat<=ScatteringTable(Valleyindex, index, 10)) then
+        
+
+    elseif (rScat<=ScatteringTable(eValley(particle), index, 10)) then
         ! GammaIVEmi(to 1) NOT FOR 1
+        if (eValley(particle).eq.1) then
+            print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
+        endif
+
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(Valleyindex, 1)-Eiv(Valleyindex, 1)
+        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 1)-Eiv(eValley(particle), 1)
+        !print *, "Intervalley Scattering", eEnergy(particle)
+        ! Change Valley
+        eValley(particle) = 1
+
         ! Generate New Theta, Phi
         call random_number(rtheta)
         call random_number(rphi)
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
-            
+
     else
         ! Self Scattering
     endif

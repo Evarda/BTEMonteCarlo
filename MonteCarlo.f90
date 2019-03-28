@@ -4,18 +4,22 @@ program MonteCarlo
 
     ! Timestepping Loop
     real :: timeLeft
+    real :: timeLastScat
 
     ! Time Averages
-    real :: timeavgvx = 0
-    real :: timeavgvy = 0
-    real :: timeavgvz = 0
-    real :: timeavgKEG = 0
-    real :: timeavgKEL = 0
-    real :: timeavgKEX = 0
-    real :: timeavgKEavg = 0
-    real :: timeValleyPopG = 0
-    real :: timeValleyPopL = 0
-    real :: timeValleyPopX = 0
+    real :: vxSum = 0
+    real :: vySum = 0
+    real :: vzSum = 0
+    real :: KEGSum = 0
+    real :: KELSum = 0
+    real :: KEXSum = 0
+    real :: KESum = 0
+    real :: ValleyPopG = 0
+    real :: ValleyPopL = 0
+    real :: ValleyPopX = 0
+    real :: EAVG = 0
+    real :: PAVG = 0
+    real :: PZAVG = 0
 
 
     ! Call Random Seed
@@ -52,26 +56,36 @@ program MonteCarlo
     open(unit=21, file='Data/Problem2/ValleyPopG', status="unknown")
     open(unit=22, file='Data/Problem2/ValleyPopL', status="unknown")
     open(unit=23, file='Data/Problem2/ValleyPopX', status="unknown")
+    open(unit=24, file='Data/Problem2/timestep', status="unknown")
+    open(unit=25, file='Data/Problem2/time', status="unknown")
+    open(unit=26, file='Data/Problem2/Estep', status="unknown")
+    open(unit=27, file='Data/Problem2/EAVG', status="unknown")
+    open(unit=28, file='Data/Problem2/PAVG', status="unknown")
+    open(unit=29, file='Data/Problem2/PZAVG', status="unknown")
 
     do nEfield = 1, numE
         print *, 'Electric field =', Efield(nEfield)
 
         ! Clear Arrays
-        timeavgvx = 0
-        timeavgvy = 0
-        timeavgvz = 0
-        timeavgKEG = 0
-        timeavgKEL = 0
-        timeavgKEX = 0
-        timeavgKEavg = 0
-        timeValleyPopG = 0
-        timeValleyPopL = 0
-        timeValleyPopX = 0
+        vxSum = 0
+        vySum = 0
+        vzSum = 0
+        KEGSum = 0
+        KELSum = 0
+        KEXSum = 0
+        KESum = 0
+        ValleyPopG = 0
+        ValleyPopL = 0
+        ValleyPopX = 0
+
+        EAVG = 0
+        PAVG = 0
+        PZAVG = 0
 
         
         ! Initialize Particles (t = 1)
         do particle = 1, eN0
-            print *, 'particle', particle
+            !print *, 'particle', particle
             ! Initialize Random Numbers
             call random_number(rEnergy)
             call random_number(rtheta)
@@ -79,163 +93,196 @@ program MonteCarlo
             call random_number(rteff)
             ! Initialize Particles in Gamma Valley
                 eValley(particle) = 1
-                Valleyindex = eValley(particle)
             ! Initialize Randomized Particle Values
                 eEnergy(particle) = -3.0/2.0*kb*T*log(rEnergy) ! eV
                 ePhi(particle) = 2.0*pi*rphi
                 eTheta(particle) = acos(1.0-2.0*rtheta)
             ! Calculate Momentum
-                eMomentumMag(particle) = sqrt(2.0*effm(Valleyindex)*eEnergy(particle))*sqrt(q)
+                eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))*sqrt(q)
                 eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
                 eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
                 eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
             ! Initialize Free Flight Time
-                eTff(particle) = -1.0/Gamma0(Valleyindex)*log(rteff)
+                eTff(particle) = -1.0/Gamma0(eValley(particle))*log(rteff)
             if (nEfield.eq.1) then
+
             ! Write Problem 1
                 write(11, *) eEnergy(particle)
                 write(12, *) eMomentum(particle,3)
             endif
 
             ! Time Sums
-            timeavgvx = timeavgvx + eMomentum(particle,1)/effm(Valleyindex)
-            timeavgvy = timeavgvy + eMomentum(particle,2)/effm(Valleyindex)
-            timeavgvz = timeavgvz + eMomentum(particle,3)/effm(Valleyindex)
+            vxSum = vxSum + eMomentum(particle,1)/effm(eValley(particle))
+            vySum = vySum + eMomentum(particle,2)/effm(eValley(particle))
+            vzSum = vzSum + eMomentum(particle,3)/effm(eValley(particle))
             
+            KESum = KESum + eEnergy(particle)
+
             if (Valleyindex.eq.1) then
-                timeavgKEG = timeavgKEG+eEnergy(particle)
-                timeValleyPopG = timeValleyPopG + 1
+                KEGSum = KEGSum+eEnergy(particle)
+                ValleyPopG = ValleyPopG + 1
             elseif (Valleyindex.eq.2) then
-                timeavgKEL = timeavgKEG+eEnergy(particle)
-                timeValleyPopL = timeValleyPopL + 1
+                KELSum = KELSum+eEnergy(particle)
+                ValleyPopL = ValleyPopL + 1
             elseif (Valleyindex.eq.3) then
-                timeavgKEX = timeavgKEG+eEnergy(particle)
-                timeValleyPopX = timeValleyPopX + 1
+                KEXSum = KEXSum+eEnergy(particle)
+                ValleyPopX = ValleyPopX + 1
             endif
 
-            timeavgKEavg = timeavgKEavg + eEnergy(particle)
+            EAVG = EAVG + eEnergy(particle)
+            PAVG = PAVG + eMomentumMag(particle)
+            PZAVG = PZAVG + eMomentum(particle,3)
+            
         enddo
 
-        ! Time Averages
-        timeavgvx = timeavgvx / eN0
-        timeavgvy = timeavgvy / eN0
-        timeavgvz = timeavgvz / eN0
-        timeavgKEG = timeavgKEG / timeValleyPopG
-        timeavgKEL = timeavgKEL / timeValleyPopL
-        timeavgKEX = timeavgKEX / timeValleyPopX
-        timeavgKEavg = timeavgKEavg / eN0
-
+        ! Write Problem 2 (for 1st timestep)
         write(13, *) Efield(nEfield)
-        write(14, *) timeavgvx
-        write(15, *) timeavgvy
-        write(16, *) timeavgvz
-        write(17, *) timeavgKEG
-        write(18, *) timeavgKEL
-        write(19, *) timeavgKEX
-        write(20, *) timeavgKEavg
-        write(21, *) timeValleyPopG
-        write(22, *) timeValleyPopL
-        write(23, *) timeValleyPopX
+        write(14, *) vxSum / eN0
+        write(15, *) vySum / eN0
+        write(16, *) vzSum / eN0
+        write(17, *) KEGSum / ValleyPopG
+        write(18, *) KELSum / ValleyPopL
+        write(19, *) KEXSum / ValleyPopX
+        write(20, *) KESum / eN0
+        write(21, *) ValleyPopG
+        write(22, *) ValleyPopL
+        write(23, *) ValleyPopX
+        write(24, *) 1
+        write(25, *) 0.0
+        write(26, *) nEfield
+        write(27, *) EAVG  / eN0
+        write(28, *) PAVG  / eN0
+        write(29, *) PZAVG / eN0
 
 
-    close(11)
-    close(12)
+        close(11)
+        close(12)
 
 
         ! Begin Time Stepping Loop (t > 1)
         do timestep = 1, maxtimestep
 
             ! Clear Arrays
-            timeavgvx = 0
-            timeavgvy = 0
-            timeavgvz = 0
-            timeavgKEG = 0
-            timeavgKEL = 0
-            timeavgKEX = 0
-            timeavgKEavg = 0
-            timeValleyPopG = 0
-            timeValleyPopL = 0
-            timeValleyPopX = 0
+            vxSum = 0
+            vySum = 0
+            vzSum = 0
+            KEGSum = 0
+            KELSum = 0
+            KEXSum = 0
+            KESum = 0
+            ValleyPopG = 0
+            ValleyPopL = 0
+            ValleyPopX = 0
+
+            EAVG = 0
+            PAVG = 0
+            PZAVG = 0
+
 
             do particle = 1, eN0
+                ! If Free Flight Time is bigger than the step size dt
                 if (eTff(particle)>=dt) then
-                    ! Drift pz
+                    ! Drift pz by dt
                     eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*dt
+                    ! Update p
                     eMomentumMag(particle) = sqrt((eMomentum(particle,1)/q)**2.0 + &
                                                   (eMomentum(particle,2)/q)**2.0 + &
                                                   (eMomentum(particle,3)/q)**2.0)*q
-                    eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(Valleyindex))*q
+                    ! Update Energy
+                    eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(eValley(particle)))*q
+                    ! Update Free Flight Time
                     eTff(particle) = eTff(particle) - dt
+
+                ! If Free Flight Time is smaller than the step size dt
                 else if (eTff(particle)<dt) then
-                99  Valleyindex = eValley(particle)
-                    timeLeft = eTff(particle)-dt
-                    call random_number(rScat)
-                    call random_number(rteff)
-                    ! Drift to get pz and calculate E
-                    eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*eTff(particle)
+                    ! Record time left in time step after scattering event
+                    timeLeft = dt-eTff(particle)
+                    
+                    ! Drift pz by eTff
+                99  eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*eTff(particle)
+                    ! Update p
                     eMomentumMag(particle) = sqrt((eMomentum(particle,1)/q)**2.0 + &
                                                   (eMomentum(particle,2)/q)**2.0 + &
                                                   (eMomentum(particle,3)/q)**2.0)*q
-                    eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(Valleyindex))*q
-                    ! Choose Scattering Mechanism, update E, p, theta, phi
+                    ! Update Energy
+                    eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(eValley(particle)))*q
+                    
+                    ! Scatter (new theta and phi, E and p calculated)
+                    call random_number(rScat)
                     call chooseScatMech()
-                    ! Update tff
-                    eTff(particle) = -1.0/Gamma0(Valleyindex)*log(rteff)
-                    ! Check if time less than the rest, if not, loop
-                    if (eTff(particle)<=timeLeft) then
+                    
+                    ! New Free Flight Time
+                    call random_number(rteff)
+                    eTff(particle) = -1.0/Gamma0(eValley(particle))*log(rteff)
+                    
+                    ! Update time left in time step after scattering event
+                    timeLastScat = timeLeft
+                    timeLeft = timeLeft-eTff(particle)
+                    
+                    ! Check if time left is positive, if so, scattering event happens again in this timestep
+                    if (0<timeLeft) then
+                        ! Repeat drift and scattering with remaining time
                         goto 99
                     else
-                        ! Drift rest of way
-                        eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*dt
+                        if (timeLastScat<0) then
+                            print *, "Error: Scattering time is negative!"
+                        endif
+                        ! Drift pz by the remaining time after the last scattering in timestep
+                        eMomentum(particle,3) = eMomentum(particle,3) + (-q)*Efield(nEfield)*timeLastScat
+                        ! Update p
+                        eMomentumMag(particle) = sqrt((eMomentum(particle,1)/q)**2.0 + &
+                                                      (eMomentum(particle,2)/q)**2.0 + &
+                                                      (eMomentum(particle,3)/q)**2.0)*q
+                        ! Update Energy
+                        eEnergy(particle) = ((eMomentumMag(particle)/q)**2.0)/(2.0*effm(eValley(particle)))*q
                     endif
                 else
                     print *, "Error: Particle Time Error in Time Stepping Loop"
                 endif
 
-                print *, eMomentum(particle,1), eMomentum(particle,2), eMomentum(particle,3), &
-                eMomentumMag(particle), eEnergy(particle)
-
-
                 ! Time Sums
-                timeavgvx = timeavgvx + eMomentum(particle,1)/effm(Valleyindex)
-                timeavgvy = timeavgvy + eMomentum(particle,2)/effm(Valleyindex)
-                timeavgvz = timeavgvz + eMomentum(particle,3)/effm(Valleyindex)
+                vxSum = vxSum + eMomentum(particle,1)/effm(eValley(particle))
+                vySum = vySum + eMomentum(particle,2)/effm(eValley(particle))
+                vzSum = vzSum + eMomentum(particle,3)/effm(eValley(particle))
                 
-                if (Valleyindex.eq.1) then
-                    timeavgKEG = timeavgKEG+eEnergy(particle)
-                    timeValleyPopG = timeValleyPopG + 1
-                elseif (Valleyindex.eq.2) then
-                    timeavgKEL = timeavgKEG+eEnergy(particle)
-                    timeValleyPopL = timeValleyPopL + 1
-                elseif (Valleyindex.eq.3) then
-                    timeavgKEX = timeavgKEG+eEnergy(particle)
-                    timeValleyPopX = timeValleyPopX + 1
+                KESum = KESum + eEnergy(particle)
+
+                if (eValley(particle).eq.1) then
+                    KEGSum = KEGSum+eEnergy(particle)
+                    ValleyPopG = ValleyPopG + 1
+                elseif (eValley(particle).eq.2) then
+                    KELSum = KELSum+eEnergy(particle)
+                    ValleyPopL = ValleyPopL + 1
+                elseif (eValley(particle).eq.3) then
+                    KEXSum = KEXSum+eEnergy(particle)
+                    ValleyPopX = ValleyPopX + 1
                 endif
 
-                timeavgKEavg = timeavgKEavg + eEnergy(particle)
+                EAVG = EAVG + eEnergy(particle)
+                PAVG = PAVG + eMomentumMag(particle)
+                PZAVG = PZAVG + eMomentum(particle,3)
 
             enddo
 
-            ! Time Averages
-            timeavgvx = timeavgvx / eN0
-            timeavgvy = timeavgvy / eN0
-            timeavgvz = timeavgvz / eN0
-            timeavgKEG = timeavgKEG / timeValleyPopG
-            timeavgKEL = timeavgKEL / timeValleyPopL
-            timeavgKEX = timeavgKEX / timeValleyPopX
-            timeavgKEavg = timeavgKEavg / eN0
-    
+            ! Write Problem 2 (for remaining timesteps)
             write(13, *) Efield(nEfield)
-            write(14, *) timeavgvx
-            write(15, *) timeavgvy
-            write(16, *) timeavgvz
-            write(17, *) timeavgKEG
-            write(18, *) timeavgKEL
-            write(19, *) timeavgKEX
-            write(20, *) timeavgKEavg
-            write(21, *) timeValleyPopG
-            write(22, *) timeValleyPopL
-            write(23, *) timeValleyPopX
+            write(14, *) vxSum / eN0
+            write(15, *) vySum / eN0
+            write(16, *) vzSum / eN0
+            write(17, *) KEGSum / ValleyPopG
+            write(18, *) KELSum / ValleyPopL
+            write(19, *) KEXSum / ValleyPopX
+            write(20, *) KESum / eN0
+            write(21, *) ValleyPopG
+            write(22, *) ValleyPopL
+            write(23, *) ValleyPopX
+            write(24, *) timestep
+            write(25, *) timestep*dt
+            write(26, *) nEfield
+
+            write(27, *) EAVG  / eN0
+            write(28, *) PAVG  / eN0
+            write(29, *) PZAVG / eN0
 
         enddo
 
@@ -252,5 +299,12 @@ program MonteCarlo
     close(21)
     close(22)
     close(23)
+    close(24)
+    close(25)
+    close(26)
+
+    close(27)
+    close(28)
+    close(29)
     
 end program MonteCarlo

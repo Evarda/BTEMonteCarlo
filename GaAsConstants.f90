@@ -52,9 +52,9 @@ module GaAsConstants
     integer :: particle
     integer :: timestep
     integer :: nEfield
-    integer :: maxtimestep = 10
+    integer :: maxtimestep = 200
 
-    real :: dt = 1e-15
+    real :: dt = 50e-15
 
 
 

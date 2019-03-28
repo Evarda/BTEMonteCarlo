@@ -22,8 +22,8 @@ subroutine makeScatTable
         ScatteringTable(valley, ii, 7) = ScatteringTable(valley, ii, 6) + GammaIVAbs(valley, 3, ii)
         ScatteringTable(valley, ii, 8) = ScatteringTable(valley, ii, 7) + GammaIVEmi(valley, 3, ii)
         enddo
-        ScatteringTable(1, ii,  9) = 0
-        ScatteringTable(1, ii, 10) = 0
+        ScatteringTable(1, ii,  9) = ScatteringTable(1, ii, 8)
+        ScatteringTable(1, ii, 10) = ScatteringTable(1, ii, 9)
         do valley = 2, 3
         ScatteringTable(valley, ii,  9) = ScatteringTable(valley, ii, 8) + GammaIVEmi(valley, 1, ii)
         ScatteringTable(valley, ii, 10) = ScatteringTable(valley, ii, 9) + GammaIVEmi(valley, 1, ii)
@@ -32,6 +32,7 @@ subroutine makeScatTable
 
     do valley = 1, 3
         Gamma0(valley)=maxval(ScatteringTable(valley, :, 10))
+        print *, 'Gamma0 = ', Gamma0(valley)
     enddo
 
     do ii = 1, nE
