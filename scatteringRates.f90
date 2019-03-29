@@ -23,6 +23,7 @@ subroutine scatteringRates
     real :: PopFac
     real :: IonFac
     real, dimension(8) :: g3DIVFac
+    
 
     ! Acoustic Phonon Scattering
     real, dimension(3) :: Dac = (/ 7.01, 9.2, 9.0 /) ! [eV] for gamma, L, X respectively

@@ -4,7 +4,7 @@ program MonteCarlo
 
     ! Timestepping Loop
     real :: timeLeft
-    real :: timeLastScat
+    real :: checktimeLeft
 
     ! Time Averages
     real :: vxSum = 0
@@ -242,25 +242,28 @@ program MonteCarlo
                     eTff(particle) = -1.0/Gamma0(eValley(particle))*log(rteff)
                     
                     ! Update time left in time step after scattering event
-                    timeLastScat = timeLeft
-                    timeLeft = timeLeft-eTff(particle)
+                    checktimeLeft = timeLeft-eTff(particle)
                     
                     ! Check if time left is positive, if so, scattering event happens again in this timestep
-                    if (0<timeLeft) then
+                    if (0<checktimeLeft) then
+                        ! Update Time
+                        timeLeft = checktimeLeft
                         ! Repeat drift and scattering with remaining time
                         goto 99
                     else
-                        if (timeLastScat<0) then
+                        if (timeLeft<0) then
                             print *, "Error: Scattering time is negative!"
                         endif
                         ! Drift pz by the remaining time after the last scattering in timestep
-                        eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*timeLastScat
+                        eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*timeLeft
                         ! Update p
                         eMomentumMag(particle) = sqrt((eMomentum(particle,1))**2.0 + &
                                                       (eMomentum(particle,2))**2.0 + &
                                                       (eMomentum(particle,3))**2.0)
                         ! Update Energy
                         eEnergy(particle) = ((eMomentumMag(particle))**2.0)/(2.0*effm(eValley(particle)))*q
+                        ! Update Free Flight
+                        eTff(particle) = eTff(particle)-timeLeft
                     endif
                 else
                     print *, "Error: Particle Time Error in Time Stepping Loop"

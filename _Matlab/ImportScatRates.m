@@ -22,11 +22,11 @@ GammaIIL=importdata('ScatRates/L/GammaIonImp');
 GammaPopAbsL=importdata('ScatRates/L/GammaPopAbs');
 GammaPopEmiL=importdata('ScatRates/L/GammaPopEmi');
 GammaIVLGAbs=importdata('ScatRates/L/GammaIVGAbs');
-GammaIVLXAbs=importdata('ScatRates/L/GammaIVLAbs');
-GammaIVLLAbs=importdata('ScatRates/L/GammaIVXAbs');
+GammaIVLXAbs=importdata('ScatRates/L/GammaIVXAbs');
+GammaIVLLAbs=importdata('ScatRates/L/GammaIVLAbs');
 GammaIVLGEmi=importdata('ScatRates/L/GammaIVGEmi');
-GammaIVLXEmi=importdata('ScatRates/L/GammaIVLEmi');
-GammaIVLLEmi=importdata('ScatRates/L/GammaIVXEmi');
+GammaIVLXEmi=importdata('ScatRates/L/GammaIVXEmi');
+GammaIVLLEmi=importdata('ScatRates/L/GammaIVLEmi');
 
 GammaAcousticAbsX=importdata('ScatRates/X/GammaAcousticAbs');
 GammaAcousticEmiX=importdata('ScatRates/X/GammaAcousticEmi');
@@ -34,11 +34,11 @@ GammaIIX=importdata('ScatRates/X/GammaIonImp');
 GammaPopAbsX=importdata('ScatRates/X/GammaPopAbs');
 GammaPopEmiX=importdata('ScatRates/X/GammaPopEmi');
 GammaIVXGAbs=importdata('ScatRates/X/GammaIVGAbs');
-GammaIVXXAbs=importdata('ScatRates/X/GammaIVLAbs');
-GammaIVXLAbs=importdata('ScatRates/X/GammaIVXAbs');
+GammaIVXXAbs=importdata('ScatRates/X/GammaIVXAbs');
+GammaIVXLAbs=importdata('ScatRates/X/GammaIVLAbs');
 GammaIVXGEmi=importdata('ScatRates/X/GammaIVGEmi');
-GammaIVXXEmi=importdata('ScatRates/X/GammaIVLEmi');
-GammaIVXLEmi=importdata('ScatRates/X/GammaIVXEmi');
+GammaIVXXEmi=importdata('ScatRates/X/GammaIVXEmi');
+GammaIVXLEmi=importdata('ScatRates/X/GammaIVLEmi');
 
 
 %% Plot
@@ -68,8 +68,8 @@ hold on
 semilogy(Energy,GammaAcousticEmiL, '--','Linewidth', 3,'Color', [0 0 0])
 semilogy(Energy,GammaPopAbsL,'Linewidth', 3,'Color', [1 0 0])
 semilogy(Energy,GammaPopEmiL, '--','Linewidth', 3,'Color', [1 0 0])
-semilogy(Energy,GammaIVGLAbs,'Linewidth', 3,'Color', [0 0 1])
-semilogy(Energy,GammaIVGLEmi, '--','Linewidth', 3,'Color', [0 0 1])
+semilogy(Energy,GammaIVLGAbs,'Linewidth', 3,'Color', [0 0 1])
+semilogy(Energy,GammaIVLGEmi, '--','Linewidth', 3,'Color', [0 0 1])
 semilogy(Energy,GammaIVLLAbs,'Linewidth', 3,'Color', [0 1 0])
 semilogy(Energy,GammaIVLLEmi, '--','Linewidth', 3,'Color', [0 1 0])
 semilogy(Energy,GammaIVLXAbs,'Linewidth', 3,'Color', [0.5 0.5 0.5])
@@ -90,8 +90,8 @@ hold on
 semilogy(Energy,GammaAcousticEmiX, '--','Linewidth', 3,'Color', [0 0 0])
 semilogy(Energy,GammaPopAbsX,'Linewidth', 3,'Color', [1 0 0])
 semilogy(Energy,GammaPopEmiX, '--','Linewidth', 3,'Color', [1 0 0])
-semilogy(Energy,GammaIVXLAbs,'Linewidth', 3,'Color', [0 0 1])
-semilogy(Energy,GammaIVXLEmi, '--','Linewidth', 3,'Color', [0 0 1])
+semilogy(Energy,GammaIVXGAbs,'Linewidth', 3,'Color', [0 0 1])
+semilogy(Energy,GammaIVXGEmi, '--','Linewidth', 3,'Color', [0 0 1])
 semilogy(Energy,GammaIVXLAbs,'Linewidth', 3,'Color', [0 1 0])
 semilogy(Energy,GammaIVXLEmi, '--','Linewidth', 3,'Color', [0 1 0])
 semilogy(Energy,GammaIVXXAbs,'Linewidth', 3,'Color', [0.5 0.5 0.5])

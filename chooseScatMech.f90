@@ -45,6 +45,8 @@ subroutine chooseScatMech
     real :: pzold
     real :: pold
     real :: pnew
+
+    real :: Eold
     
     Eiv(1, 1) = 0
     Eiv(1, 2) = EivGL
@@ -69,16 +71,20 @@ subroutine chooseScatMech
 
 
     ! Find Energy Index
+    index = 0
     do ii = 1, nE
-        index = 1;
         if (Energy(ii)<=eEnergy(particle)) then
-            index = ii
+            index = index+1
         elseif (Energy(ii)>eEnergy(particle)) then
             exit
         endif
     enddo
     if (index>nE) then
         index = nE
+        print *, "Index > nE"
+    endif
+    if(index.eq.0) then
+        index = 1
     endif
 
     ! Choose Gamma
@@ -120,12 +126,13 @@ subroutine chooseScatMech
         mechanism = 3
         ! GammaPopAbs
             ! Calculate Energy, Momentum
+            Eold = eEnergy(particle)
             eEnergy(particle) = eEnergy(particle)+EPOP
             ! Generate New Theta, Phi
             call random_number(rtheta)
             call random_number(rphi)
             ePhi(particle) = 2.0*pi*rphi
-            f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
+            f = 2.0*sqrt(Eold*eEnergy(particle))/((sqrt(Eold)-sqrt(eEnergy(particle)))**2)
             eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
             ! Calculate Momentum
             eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
@@ -160,13 +167,17 @@ subroutine chooseScatMech
         mechanism = 4
         ! GammaPopEmi
             ! Calculate Energy
+            Eold = eEnergy(particle)
             eEnergy(particle) = eEnergy(particle)-EPOP
             ! Generate New Theta, Phi
             call random_number(rtheta)
             call random_number(rphi)
             ePhi(particle) = 2.0*pi*rphi
-            f = 2.0*sqrt(eEnergy(particle)*(eEnergy(particle)-EPOP))/((sqrt(eEnergy(particle))-sqrt(eEnergy(particle)-EPOP))**2)
-            eTheta(particle) = acos((1.0+f-(1.0+2.0*f)**rtheta)/f)
+            f = 2.0*sqrt(Eold*eEnergy(particle))/((sqrt(Eold)-sqrt(eEnergy(particle)))**2)
+            !print *, "Theta", Eold, EPOP
+            eTheta(particle) = acos((1.0+f-((1.0+2.0*f)**rtheta))/f)
+            
+
             ! Calculate Momentum
             eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
             pxold = eMomentum(particle,1)
@@ -186,6 +197,7 @@ subroutine chooseScatMech
             eMomentum(particle,3) = pynew*(-sqrt(pxold**2.0+pyold**2.0)/pold) + &
                                     pznew*(pzold/pold)
 
+
             !eMomentum(particle,1) = pxnew*(pzold*pxold/sqrt(pxold**2.0+pyold**2.0)/pold) + &
             !                        pynew*(-pyold/sqrt(pxold**2.0+pyold**2.0)) + &
             !                        pznew*(pxold/pold)
@@ -201,7 +213,6 @@ subroutine chooseScatMech
 
         ! Calculate Energy
         eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 2)+Eiv(eValley(particle), 2)
-        !print *, "Intervalley Scattering", eEnergy(particle)
         ! Change Valley
         eValley(particle) = 2
 
@@ -278,7 +289,7 @@ subroutine chooseScatMech
         ePhi(particle) = 2.0*pi*rphi
         eTheta(particle) = acos(1.0-2.0*rtheta)
         ! Calculate New Components of Momentum
-        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))*eEnergy(particle))/sqrt(q)
+        eMomentumMag(particle) = sqrt(2.0*effm(eValley(particle))/q*eEnergy(particle))
         eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
         eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
@@ -290,6 +301,7 @@ subroutine chooseScatMech
         ! GammaIVAbs(to 1) NOT FOR 1
         if (Valleyindex.eq.1) then
             print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
+            call abort
         endif
 
         ! Calculate Energy
@@ -316,6 +328,7 @@ subroutine chooseScatMech
         ! GammaIVEmi(to 1) NOT FOR 1
         if (eValley(particle).eq.1) then
             print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
+            call abort
         endif
 
         ! Calculate Energy
@@ -339,7 +352,6 @@ subroutine chooseScatMech
     else
         ! Self Scattering
         mechanism = 11
-        !print *, "Self scattered"
     endif
 
 
