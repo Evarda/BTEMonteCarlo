@@ -210,9 +210,19 @@ subroutine chooseScatMech
     elseif (rScat<=ScatteringTable(eValley(particle), index, 5)) then
         mechanism = 5
         ! GammaIVAbs(to 2) Energy(i)-deltaE(ivstep)+Eiv(ivstep)
+        if (eValley(particle).eq.1) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEGL+EivGL
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaELL+EivLL
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEXL+EivXL
+        endif
 
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 2)+Eiv(eValley(particle), 2)
+        !eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 2)+Eiv(eValley(particle), 2)
         ! Change Valley
         eValley(particle) = 2
 
@@ -230,9 +240,20 @@ subroutine chooseScatMech
     elseif (rScat<=ScatteringTable(eValley(particle), index, 6)) then
         mechanism = 6
         ! GammaIVEmi(to 2)
+        if (eValley(particle).eq.1) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEGL-EivGL
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaELL-EivLL
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEXL-EivXL
+        endif
 
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 2)-Eiv(eValley(particle), 2)
+        !eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 2)-Eiv(eValley(particle), 2)
+        !print *, "Emission to 2", eValley(particle), deltaE(eValley(particle), 2), Eiv(eValley(particle), 2)
         !print *, "Intervalley Scattering", eEnergy(particle)
         ! Change Valley
         eValley(particle) = 2
@@ -254,8 +275,19 @@ subroutine chooseScatMech
         mechanism = 7
         ! GammaIVAbs(to 3)
 
+        if (eValley(particle).eq.1) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEGX+EivGX
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaELX+EivLX
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEXX+EivXX
+        endif
+
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 3)+Eiv(eValley(particle), 3)
+        !eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 3)+Eiv(eValley(particle), 3)
         !print *, "Intervalley Scattering", eEnergy(particle)
         ! Change Valley
         eValley(particle) = 3
@@ -276,13 +308,23 @@ subroutine chooseScatMech
     elseif (rScat<=ScatteringTable(eValley(particle), index, 8)) then
         mechanism = 8
         ! GammaIVEmi(to 3)
-        ! Calculate Energy
 
-        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 3)-Eiv(eValley(particle), 3)
+        if (eValley(particle).eq.1) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEGX-EivGX
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaELX-EivLX
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEXX-EivXX
+        endif
+
+        ! Calculate Energy
+        !eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 3)-Eiv(eValley(particle), 3)
         !print *, "Intervalley Scattering", eEnergy(particle)
         ! Change Valley
         eValley(particle) = 3
-
         ! Generate New Theta, Phi
         call random_number(rtheta)
         call random_number(rphi)
@@ -299,13 +341,19 @@ subroutine chooseScatMech
     elseif (rScat<=ScatteringTable(eValley(particle), index, 9)) then
         mechanism = 9
         ! GammaIVAbs(to 1) NOT FOR 1
-        if (Valleyindex.eq.1) then
+        if (eValley(particle).eq.1) then
             print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
             call abort
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaELG+EivLG
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEXG+EivXG
         endif
 
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 1)+Eiv(eValley(particle), 1)
+        !eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 1)+Eiv(eValley(particle), 1)
         !print *, "Intervalley Scattering", eEnergy(particle)
         ! Change Valley
         eValley(particle) = 1
@@ -329,14 +377,19 @@ subroutine chooseScatMech
         if (eValley(particle).eq.1) then
             print *, "ERROR: Gamma-Gamma Scattering DOES NOT EXIST"
             call abort
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaELG-EivLG
+        elseif (eValley(particle).eq.2) then
+            ! Calculate Energy
+            eEnergy(particle) = eEnergy(particle)-deltaEXG-EivXG
         endif
 
         ! Calculate Energy
-        eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 1)-Eiv(eValley(particle), 1)
+        !eEnergy(particle) = eEnergy(particle)-deltaE(eValley(particle), 1)-Eiv(eValley(particle), 1)
         !print *, "Intervalley Scattering", eEnergy(particle)
         ! Change Valley
         eValley(particle) = 1
-
 
         ! Generate New Theta, Phi
         call random_number(rtheta)
@@ -357,3 +410,11 @@ subroutine chooseScatMech
 
 
 end subroutine chooseScatMech
+
+subroutine updateMomentumComponents()
+    use GaAsConstants
+    ! Calculate New Components of Momentum
+    eMomentum(particle,1) = eMomentumMag(particle)*cos(ePhi(particle))*sin(eTheta(particle))
+    eMomentum(particle,2) = eMomentumMag(particle)*sin(ePhi(particle))*sin(eTheta(particle))
+    eMomentum(particle,3) = eMomentumMag(particle)*cos(eTheta(particle))
+end subroutine

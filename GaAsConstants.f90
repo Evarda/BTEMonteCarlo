@@ -35,7 +35,7 @@ module GaAsConstants
     real :: rScat
 
     ! Particle Values
-    integer :: eN0 = 1000
+    integer :: eN0 = 10000
     integer, dimension(:), allocatable :: eValley
     integer :: Valleyindex
     real, dimension(:), allocatable :: eEnergy
@@ -46,7 +46,10 @@ module GaAsConstants
     real, dimension(:), allocatable :: eTff
 
     integer :: numE = 6
-    real, dimension(6) :: Efield = (/ 0.5e5, 1.0e5, 2.0e5, 5.0e5, 8.0e5, 10.0e5 /)
+    real, dimension(:), allocatable :: Efield 
+    integer :: maxnEfield = 200
+    real :: dEfield
+    != (/ 0.5e5, 1.0e5, 2.0e5, 5.0e5, 8.0e5, 10.0e5 /)
 
     ! Counter
     integer :: particle

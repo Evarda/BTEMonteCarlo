@@ -4,7 +4,7 @@ program MonteCarlo
 
     ! Timestepping Loop
     real :: timeLeft
-    real :: checktimeLeft
+    !real :: checktimeLeft
 
     ! Time Averages
     real :: vxSum = 0
@@ -39,6 +39,10 @@ program MonteCarlo
     allocate(eTheta(eN0))
     allocate(eTff(eN0))
 
+    allocate(Efield(maxnEfield))
+
+
+
 
     ! Problem 1 Open
     open(unit=11, file='Data/Problem1/Energy', status="unknown")
@@ -65,7 +69,15 @@ program MonteCarlo
 
     open(unit=30, file='Data/Problem2/mechanism', status="unknown")
 
-    do nEfield = 1, 6
+
+        dEfield = (10e5-0.1e5)/maxnEfield
+    do nEfield = 1, maxnEfield
+        Efield(nEfield) = 0.1e5+dEfield*(nEfield-1)
+    enddo
+
+
+    do nEfield = 1, maxnEfield
+        
         print *, 'Electric field =', Efield(nEfield)
 
         ! Clear Arrays
@@ -182,10 +194,10 @@ program MonteCarlo
 
 
             do particle = 1, eN0
-                ! If Free Flight Time is bigger than the step size dt
-                if (eTff(particle)>=dt) then
-                    ! Drift pz by dt
-                    eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*dt
+                timeleft = dt
+            99  if (eTff(particle)>timeleft) then
+                    ! Drift pz by timeleft
+                    eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*timeleft
                     ! Update p
                     eMomentumMag(particle) = sqrt((eMomentum(particle,1))**2.0 + &
                                                   (eMomentum(particle,2))**2.0 + &
@@ -193,90 +205,26 @@ program MonteCarlo
                     ! Update Energy
                     eEnergy(particle) = ((eMomentumMag(particle))**2.0)/(2.0*effm(eValley(particle)))*q
                     ! Update Free Flight Time
-                    eTff(particle) = eTff(particle) - dt
-
-                    if(isnan(eEnergy(particle))) then
-                        print *, "Energy is NaN in first loop"
-                        call abort
-                    elseif(isnan(eMomentumMag(particle))) then
-                        print *, "Momentum is NaN in first loop"
-                        call abort
-                    endif
-
-                ! If Free Flight Time is smaller than the step size dt
-                else if (eTff(particle)<dt) then
-                    ! Record time left in time step after scattering event
-                    timeLeft = dt-eTff(particle)
-                    
-                    ! Drift pz by eTff
-                99  eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*eTff(particle)
+                    eTff(particle) = eTff(particle) - timeleft
+                else
+                    ! Drift pz by tff
+                    eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*eTff(particle)
                     ! Update p
                     eMomentumMag(particle) = sqrt((eMomentum(particle,1))**2.0 + &
                                                   (eMomentum(particle,2))**2.0 + &
                                                   (eMomentum(particle,3))**2.0)
                     ! Update Energy
                     eEnergy(particle) = ((eMomentumMag(particle))**2.0)/(2.0*effm(eValley(particle)))*q
-                    
-                    if(isnan(eEnergy(particle))) then
-                        print *, "Energy is NaN pre-scatter"
-                        call abort
-                    elseif(isnan(eMomentumMag(particle))) then
-                        print *, "Momentum is NaN pre-scatter"
-                        call abort
-                    endif
-
                     ! Scatter (new theta and phi, E and p calculated)
                     call random_number(rScat)
                     call chooseScatMech()
-                    
-                    if(isnan(eEnergy(particle))) then
-                        print *, "Energy is NaN post-scatter with mechanism", mechanism
-                        call abort
-                    elseif(isnan(eMomentumMag(particle))) then
-                        print *, "Momentum is NaN post-scatter with mechanism", mechanism
-                        call abort
-                    endif
-                    
+                    ! Update Timeleft
+                    timeleft = timeleft - eTff(particle)
                     ! New Free Flight Time
                     call random_number(rteff)
                     eTff(particle) = -1.0/Gamma0(eValley(particle))*log(rteff)
-                    
-                    ! Update time left in time step after scattering event
-                    checktimeLeft = timeLeft-eTff(particle)
-                    
-                    ! Check if time left is positive, if so, scattering event happens again in this timestep
-                    if (0<checktimeLeft) then
-                        ! Update Time
-                        timeLeft = checktimeLeft
-                        ! Repeat drift and scattering with remaining time
-                        goto 99
-                    else
-                        if (timeLeft<0) then
-                            print *, "Error: Scattering time is negative!"
-                        endif
-                        ! Drift pz by the remaining time after the last scattering in timestep
-                        eMomentum(particle,3) = eMomentum(particle,3) + Efield(nEfield)*timeLeft
-                        ! Update p
-                        eMomentumMag(particle) = sqrt((eMomentum(particle,1))**2.0 + &
-                                                      (eMomentum(particle,2))**2.0 + &
-                                                      (eMomentum(particle,3))**2.0)
-                        ! Update Energy
-                        eEnergy(particle) = ((eMomentumMag(particle))**2.0)/(2.0*effm(eValley(particle)))*q
-                        ! Update Free Flight
-                        eTff(particle) = eTff(particle)-timeLeft
-                    endif
-                else
-                    print *, "Error: Particle Time Error in Time Stepping Loop"
+                    goto 99
                 endif
-
-                if(isnan(eEnergy(particle))) then
-                    print *, "Energy is NaN at timestep", timestep
-                    call abort
-                elseif(isnan(eMomentumMag(particle))) then
-                    print *, "Momentum is NaN at timestep", timestep
-                    call abort
-                endif
-
 
                 ! Time Sums
                 vxSum = vxSum + q*eMomentum(particle,1)/effm(eValley(particle))
@@ -322,8 +270,8 @@ program MonteCarlo
             write(28, *) PAVG  / eN0
             write(29, *) PZAVG / eN0
 
+            !print *, EAVG, PAVG, PZAVG
             
-
         enddo
 
     enddo
@@ -346,6 +294,10 @@ program MonteCarlo
     close(27)
     close(28)
     close(29)
+
+
+
+    
 
     
 end program MonteCarlo
